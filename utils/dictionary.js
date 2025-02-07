@@ -1,0 +1,25 @@
+const DICTIONARY = {
+  fotographer: 'Фотограф',
+  kassir: 'Кассир',
+  R1: 'Р1',
+  R2: 'Р2',
+  R3: 'Р3',
+  R4: 'Р4',
+  MKR: 'МКР',
+  ZUZU: 'ЗуЗу',
+  N3: 'Н3',
+  N5: 'Н5',
+  MKN: 'МКН',
+  CAFE: 'Кафе',
+  FREUD: 'Фрейд',
+  VELICAN: 'Великан',
+  POBEG: 'Побег',
+  KOSMOS: 'Космос',
+  ILLUSIONS: 'Иллюзии',
+  STRAH: 'Страх',
+  STEKLO: 'Стекло',
+  DVD: 'ДВД',
+  MOVIE: 'Муви',
+};
+
+module.exports = { DICT: DICTIONARY };
