@@ -1,11 +1,14 @@
-require('dotenv').config();
-const { Telegraf, Markup, Stage, session } = require('telegraf');
+require("dotenv").config();
+const { Telegraf, Markup, Stage, session } = require("telegraf");
 
-const { reportScene } = require('./scenes/ReportScene');
-const { start, backMenu } = require('./commands');
+const { reportScene } = require("./scenes/ReportScene");
+const { start, backMenu } = require("./commands");
 
 //создаём экземплр бота
 const bot = new Telegraf(process.env.API_KEY_BOT);
+
+// опции
+const options = { dropPendingUpdates: true };
 
 //подгружаем сценарии
 const stage = new Stage([reportScene]);
@@ -21,35 +24,28 @@ bot.use((ctx, next) => {
 //   await next();
 // });
 
-// bot.hears('/menu', async (ctx, next) => {
-//   await ctx.reply(
-//     'Выбери действие:',
-//     Markup.inlineKeyboard([[Markup.callbackButton('Отчёт', 'report')]]).extra()
-//   );
-//   await next();
-// });
-
 // точка начала
 bot.start(start);
 // вход в сценарий отчёта
-bot.action('report', (ctx) => {
-  ctx.scene.enter('report');
+bot.action("report", (ctx) => {
+  ctx.scene.enter("report");
+  // ctx.re;
 });
 
-bot.on('message', (ctx) => {
-  const msg = ctx.reply('Сначала нажми на Кнопку создать отчёт!');
-  setTimeout(() => {
-    console.log(msg);
-  }, 400);
-  setTimeout(() => {
-    backMenu(ctx);
-  }, 800);
-});
-// bot.hears('report', (ctx) => {
-//   ctx.scene.enter('report');
+// bot.on("message", (ctx) => {
+//   setTimeout(() => {
+//     backMenu(ctx);
+//   }, 800);
 // });
 
-// Сценарий отчёта
+// команда запуска бота с опциями
+bot.catch((err, ctx) => {
+  console.log("Error", err);
+  bot.launch();
+});
 
-bot.launch();
+// bot.on('')
+
+// bot.launch({ dropPendingUpdates: true });
+bot.launch({ dropPendingUpdates: true });
 // bot.startPolling();

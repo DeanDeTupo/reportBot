@@ -1,4 +1,4 @@
-require('dotenv').config();
+require("dotenv").config();
 const {
   Telegraf,
   Markup,
@@ -6,27 +6,27 @@ const {
   Stage,
   session,
   BaseScene,
-} = require('telegraf');
+} = require("telegraf");
 const {
   setProfession,
   setKassaLocation,
   setPhotoLocation,
   preConfirm,
   confirmReport,
-} = require('../utils/buttons');
-const { createReport } = require('../utils/messages');
+} = require("../utils/buttons");
+const { createReport } = require("../utils/messages");
 
-const reportScene = new BaseScene('report');
-const { start, backMenu } = require('../commands');
-const { DICT } = require('../utils/dictionary');
+const reportScene = new BaseScene("report");
+const { start, backMenu } = require("../commands");
+const { DICT } = require("../utils/dictionary");
 
 //сработает, когда запустим сценарий reportScene
 
 reportScene.enter(async (ctx, next) => {
-  console.log('Отчёт. ШАГ 1.начало сценария');
+  console.log("Отчёт. ШАГ 1.начало сценария");
 
-  await ctx.editMessageText('Укажи должность', {
-    parse_mode: 'HTML',
+  await ctx.editMessageText("Укажи должность", {
+    parse_mode: "HTML",
     reply_markup: setProfession,
   });
   await next();
@@ -34,14 +34,14 @@ reportScene.enter(async (ctx, next) => {
 
 // выбираем Локацию
 reportScene.action(/profession_(.*)/, (ctx) => {
-  console.log('Отчёт. ШАГ 2.выбор должности');
+  console.log("Отчёт. ШАГ 2.выбор должности");
   const prof = ctx.match[1];
   ctx.session.profession = prof;
-  const setLocation = prof === 'kassir' ? setKassaLocation : setPhotoLocation;
+  const setLocation = prof === "kassir" ? setKassaLocation : setPhotoLocation;
   ctx.editMessageText(
     `Должность: ${DICT[ctx.session.profession]}
     Выбери локацию: `,
-    { parse_mode: 'MarkdownV2', reply_markup: setLocation }
+    { parse_mode: "MarkdownV2", reply_markup: setLocation }
   );
 });
 
@@ -54,72 +54,135 @@ reportScene.action(/loc_(.*)/, (ctx) => {
     `Я: ${DICT[ctx.session.profession]}\nЛокация: ${
       DICT[ctx.session.location]
     }\n\nВсё верно? `,
-    { parse_mode: 'MarkdownV2', reply_markup: preConfirm }
+    { parse_mode: "MarkdownV2", reply_markup: preConfirm }
   );
 });
 // НАЗАД к профессии
-reportScene.action('to_profession', (ctx) => {
-  ctx.editMessageText('Выбери должность', { reply_markup: setProfession });
+reportScene.action("to_profession", (ctx) => {
+  ctx.editMessageText("Выбери должность", { reply_markup: setProfession });
 });
 // НАЗАД к Локации
-reportScene.action('to_location', (ctx) => {
+reportScene.action("to_location", (ctx) => {
   const setLocation =
-    ctx.session.profession === 'kassir' ? setKassaLocation : setPhotoLocation;
+    ctx.session.profession === "kassir" ? setKassaLocation : setPhotoLocation;
   ctx.editMessageText(
     `Я: ${DICT[ctx.session.profession]}\n\nВыбери локацию: `,
-    { parse_mode: 'MarkdownV2', reply_markup: setLocation }
+    { parse_mode: "MarkdownV2", reply_markup: setLocation }
   );
 });
 
 // Подтверждение Анкеты:
-reportScene.action('preConfirmed', (ctx) => {
+reportScene.action("preConfirmed", (ctx) => {
   // console.log(ctx.session);
   // console.log(ctx.update);
   ctx.editMessageText(ctx.update.callback_query.message.text);
   console.log(ctx.session);
 
-  ctx.reply('А теперь напиши отчет одним сообщением');
+  ctx.reply("А теперь напиши отчет одним сообщением");
 });
 
-//слушаем на предмет отчёта
-reportScene.on('text', (ctx) => {
-  const ReportFromUser = ctx.update.message.text;
-  ctx.session.report = ReportFromUser;
-  if (ReportFromUser === '/start') {
+//слушаем ТЕКСТОВЫЙ ОТЧЕТ
+reportScene.on("text", (ctx) => {
+  const reportFromUser = ctx.update.message.text;
+  console.log("TEXT!!!!");
+
+  if (reportFromUser === "/start") {
+    console.log(1234);
+
     ctx.scene.leave();
     ctx.session = null;
     return backMenu;
   }
-  if (ReportFromUser.length < 30) {
-    ctx.reply('слишком мало! пиши нормальный отчет!');
+  ctx.session.reportType = "text";
+  ctx.session.reportText = reportFromUser;
+  if (reportFromUser.length < 10) {
+    ctx.reply("слишком мало! пиши нормальный отчет!");
     ctx.session.report = null;
     return;
   }
-  ctx.reply('Принял! Отправляем это начальству?', {
+  ctx.reply("Принял! Отправляем это начальству?", {
+    reply_markup: confirmReport,
+  });
+});
+//слушаем ФОТО ОТЧЕТ
+reportScene.on("photo", (ctx) => {
+  // Слушаем MediaGroup--------------
+  if (!!ctx.message.media_group_id) {
+    console.log("mediagroup");
+    ctx.session.reportType || ctx.session.reportType == "mediagroup";
+
+    if (!ctx.session.mediaGroup) ctx.session.mediaGroup = [];
+    ctx.session.mediaGroup.push(ctx.update.message);
+
+    // слушаем photo
+  } else {
+    console.log("----photo----");
+    ctx.session.reportType = "photo";
+    const reportFromUser = ctx.message;
+    console.log(reportFromUser);
+
+    ctx.session.photoReport = reportFromUser;
+  }
+  ctx.reply("Принял! Отправляем это начальству?", {
     reply_markup: confirmReport,
   });
 });
 
-// Отчёт ОК
-reportScene.action('report_ok', async (ctx) => {
-  console.log(ctx.session.report);
-  await ctx.reply('Спасибо за отчёт');
+reportScene.on("media_group", (ctx) => {
+  console.log(media_group);
+});
 
-  // Отправляем отчет в группу для отчётов
-  ctx.telegram.sendMessage(
-    process.env.TEST_GROUP_ID,
-    createReport(
-      ctx.session.report,
-      ctx.session.profession,
-      ctx.session.location
-    ),
-    {
-      disable_notification: true,
-      parse_mode: 'HTML',
+// ---------------------------------------------------
+// Отправил отчёт в группу
+reportScene.action("report_ok", async (ctx) => {
+  // console.log(ctx.session.reportText);
+  await ctx.reply("Спасибо за отчёт");
+
+  // Отправляем отчет в группу для отчётов - как обработать ошибку эту?
+
+  try {
+    // для текстовых отчётов
+    if (ctx.session.reportType === "text") {
+      return ctx.telegram.sendMessage(
+        process.env.TEST_GROUP_ID,
+        createReport(
+          ctx.session.reportText,
+          ctx.session.profession,
+          ctx.session.location
+        ),
+        {
+          disable_notification: true,
+          parse_mode: "HTML",
+        }
+      );
     }
-  );
-  ctx.scene.leave();
-  return backMenu(ctx);
+    //для фото отчёта
+    if (ctx.session.reportType == "photo") {
+      const message = ctx.session.photoReport;
+
+      // оформим сообщение
+      message.caption = createReport(
+        message.caption,
+        ctx.session.profession,
+        ctx.session.location
+      );
+      return ctx.telegram.sendCopy(
+        process.env.TEST_GROUP_ID,
+        // message.chat.id,
+        message,
+        {
+          disable_notification: true,
+          parse_mode: "HTML",
+        }
+      );
+    }
+    // Обработка МЕДИАГРУППЫ
+  } catch (error) {
+    console.log(error);
+  } finally {
+    ctx.scene.leave();
+    return backMenu(ctx);
+  }
 });
 
 // Отчёт НЕ ОК
@@ -128,11 +191,15 @@ reportScene.action('report_ok', async (ctx) => {
 // });
 
 //ловим конец сценария
-reportScene.action('to_menu', (ctx) => {
+reportScene.action("to_menu", (ctx) => {
   ctx.scene.leave();
-  console.log('вышел из сценария');
+  console.log("вышел из сценария");
   return backMenu(ctx);
 });
+
+// reportScene.on((err, ctx) => {
+//   console.log("Error", err);
+// });
 
 module.exports = {
   reportScene,
