@@ -81,16 +81,21 @@ reportScene.action('preConfirmed', (ctx) => {
   ctx.reply('А теперь напиши отчет одним сообщением');
 });
 
-//слушаем на предмет отчёта
+//слушаем ТЕКСТОВЫЙ ОТЧЕТ
 reportScene.on('text', (ctx) => {
-  const ReportFromUser = ctx.update.message.text;
-  ctx.session.report = ReportFromUser;
-  if (ReportFromUser === '/start') {
+  const reportFromUser = ctx.update.message.text;
+  console.log('TEXT!!!!');
+
+  if (reportFromUser === '/start') {
+    console.log(1234);
+
     ctx.scene.leave();
     ctx.session = null;
     return backMenu;
   }
-  if (ReportFromUser.length < 30) {
+  ctx.session.reportType = 'text';
+  ctx.session.reportText = reportFromUser;
+  if (reportFromUser.length < 10) {
     ctx.reply('слишком мало! пиши нормальный отчет!');
     ctx.session.report = null;
     return;
@@ -99,27 +104,85 @@ reportScene.on('text', (ctx) => {
     reply_markup: confirmReport,
   });
 });
+//слушаем ФОТО ОТЧЕТ
+reportScene.on('photo', (ctx) => {
+  // Слушаем MediaGroup--------------
+  if (!!ctx.message.media_group_id) {
+    console.log('mediagroup');
+    ctx.session.reportType || ctx.session.reportType == 'mediagroup';
 
-// Отчёт ОК
+    if (!ctx.session.mediaGroup) ctx.session.mediaGroup = [];
+    ctx.session.mediaGroup.push(ctx.update.message);
+
+    // слушаем photo
+  } else {
+    console.log('----photo----');
+    ctx.session.reportType = 'photo';
+    const reportFromUser = ctx.message;
+    console.log(reportFromUser);
+
+    ctx.session.photoReport = reportFromUser;
+  }
+  ctx.reply('Принял! Отправляем это начальству?', {
+    reply_markup: confirmReport,
+  });
+});
+
+reportScene.on('media_group', (ctx) => {
+  console.log(media_group);
+});
+
+// ---------------------------------------------------
+// Отправил отчёт в группу
 reportScene.action('report_ok', async (ctx) => {
-  console.log(ctx.session.report);
+  // console.log(ctx.session.reportText);
   await ctx.reply('Спасибо за отчёт');
 
-  // Отправляем отчет в группу для отчётов
-  ctx.telegram.sendMessage(
-    process.env.TEST_GROUP_ID,
-    createReport(
-      ctx.session.report,
-      ctx.session.profession,
-      ctx.session.location
-    ),
-    {
-      disable_notification: true,
-      parse_mode: 'HTML',
+  // Отправляем отчет в группу для отчётов - как обработать ошибку эту?
+
+  try {
+    // для текстовых отчётов
+    if (ctx.session.reportType === 'text') {
+      return ctx.telegram.sendMessage(
+        process.env.TEST_GROUP_ID,
+        createReport(
+          ctx.session.reportText,
+          ctx.session.profession,
+          ctx.session.location
+        ),
+        {
+          disable_notification: true,
+          parse_mode: 'HTML',
+        }
+      );
     }
-  );
-  ctx.scene.leave();
-  return backMenu(ctx);
+    //для фото отчёта
+    if (ctx.session.reportType == 'photo') {
+      const message = ctx.session.photoReport;
+
+      // оформим сообщение
+      message.caption = createReport(
+        message.caption,
+        ctx.session.profession,
+        ctx.session.location
+      );
+      return ctx.telegram.sendCopy(
+        process.env.TEST_GROUP_ID,
+        // message.chat.id,
+        message,
+        {
+          disable_notification: true,
+          parse_mode: 'HTML',
+        }
+      );
+    }
+    // Обработка МЕДИАГРУППЫ
+  } catch (error) {
+    console.log(error);
+  } finally {
+    ctx.scene.leave();
+    return backMenu(ctx);
+  }
 });
 
 // Отчёт НЕ ОК
@@ -133,6 +196,10 @@ reportScene.action('to_menu', (ctx) => {
   console.log('вышел из сценария');
   return backMenu(ctx);
 });
+
+// reportScene.on((err, ctx) => {
+//   console.log("Error", err);
+// });
 
 module.exports = {
   reportScene,
