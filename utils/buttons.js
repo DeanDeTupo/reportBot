@@ -1,11 +1,20 @@
 const { Markup } = require("telegraf");
 
-// const mainMenu = Markup.inlineKeyboard([
-//   [Markup.callbackButton('Написать отчёт', 'report')],
-//   //   [Markup.callbackButton('назад', 'to_menu')],
-// ]).extra();
 const mainMenu = {
   inline_keyboard: [[{ text: "Написать отчёт", callback_data: "report" }]],
+};
+
+const greeting = {
+  inline_keyboard: [
+    [{ text: "Давай запомним меня", callback_data: "greeting" }],
+  ],
+};
+
+const applyGreeting = {
+  inline_keyboard: [
+    [{ text: "Всё верно", callback_data: "acceptGreeting" }],
+    [{ text: "Изменить", callback_data: "rejectGreeting" }],
+  ],
 };
 
 const setProfession = {
@@ -75,4 +84,6 @@ module.exports = {
   setPhotoLocation,
   preConfirm,
   confirmReport,
+  greeting,
+  applyGreeting,
 };

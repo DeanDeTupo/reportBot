@@ -127,6 +127,29 @@ reportScene.on("photo", (ctx) => {
     reply_markup: confirmReport,
   });
 });
+//слушаем ФОТО ОТЧЕТ
+reportScene.on("photo", (ctx) => {
+  // Слушаем MediaGroup--------------
+  if (!!ctx.message.media_group_id) {
+    console.log("mediagroup");
+    ctx.session.reportType || ctx.session.reportType == "mediagroup";
+
+    if (!ctx.session.mediaGroup) ctx.session.mediaGroup = [];
+    ctx.session.mediaGroup.push(ctx.update.message);
+
+    // слушаем photo
+  } else {
+    console.log("----photo----");
+    ctx.session.reportType = "photo";
+    const reportFromUser = ctx.message;
+    console.log(reportFromUser);
+
+    ctx.session.photoReport = reportFromUser;
+  }
+  ctx.reply("Принял! Отправляем это начальству?", {
+    reply_markup: confirmReport,
+  });
+});
 
 reportScene.on("media_group", (ctx) => {
   console.log(media_group);
