@@ -158,7 +158,7 @@ reportScene.on("media_group", (ctx) => {
 // ---------------------------------------------------
 // Отправил отчёт в группу
 reportScene.action("report_ok", async (ctx) => {
-  // console.log(ctx.session.reportText);
+  console.log(ctx.session);
   await ctx.reply("Спасибо за отчёт");
 
   // Отправляем отчет в группу для отчётов - как обработать ошибку эту?
@@ -171,7 +171,8 @@ reportScene.action("report_ok", async (ctx) => {
         createReport(
           ctx.session.reportText,
           ctx.session.profession,
-          ctx.session.location
+          ctx.session.location,
+          ctx.session.local_name
         ),
         {
           disable_notification: true,
@@ -187,7 +188,8 @@ reportScene.action("report_ok", async (ctx) => {
       message.caption = createReport(
         message.caption,
         ctx.session.profession,
-        ctx.session.location
+        ctx.session.location,
+        ctx.session.local_name
       );
       return ctx.telegram.sendCopy(
         process.env.TEST_GROUP_ID,
