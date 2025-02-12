@@ -4,7 +4,6 @@ const fs = require('node:fs').promises;
 const dataPath = './data/personalData.json';
 
 async function checkUser(userObj) {
-  console.log(userObj);
   let response;
   const data = await fs.readFile(dataPath, { encoding: 'utf-8' });
   //   const data = await fs.readFile(dataPath, 'utf-8', (err, data) => {
@@ -12,24 +11,23 @@ async function checkUser(userObj) {
   //     if (err) return console.log(err);
   //     console.log(`прочитал: ${data}`);
   //   });
-  console.log(data);
+  // console.log(data);
+  // json - это данные, которые мы прочитали
   const json = JSON.parse(data);
 
-  const user = isInData(json, userObj);
+  const userData = isInData(json, userObj);
   // данные уже есть, пользователь зарегистрирован
-  if (!!user) {
+  if (!!userData) {
     response = {
       status: 'in',
-      data: user,
+      data: userData,
     };
-    console.log(response);
     return response;
   }
   response = {
     status: 'not',
     data: null,
   };
-  console.log('функция checkuser выполнена');
   return response;
 }
 

@@ -20,6 +20,10 @@ greetingScene.enter((ctx, next) => {
 
 greetingScene.on('message', (ctx) => {
   //   console.log(ctx);
+  if (ctx.update.message.text == '/start') {
+    ctx.scene.leave();
+    return start(ctx);
+  }
   if (!isCorrectInput(ctx)) {
     return ctx.reply(
       `Не распознал сообщение\n\nВведи ФАМИЛИЮ и ИМЯ *текстом*, в 1 строчку\nФамилия и через пробел ИМЯ \nПример:\n*Петров Иван*`,
@@ -49,7 +53,9 @@ greetingScene.action('acceptGreeting', async (ctx) => {
     `${userName.second_name} ${userName.first_name} вышел из сценария`
   );
   await registerUser(registerData);
-  return start;
+  console.log('registration is over');
+  console.log(ctx);
+  return backMenu(ctx);
 });
 
 // Переписываем
