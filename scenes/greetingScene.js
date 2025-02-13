@@ -31,7 +31,7 @@ greetingScene.on('message', (ctx) => {
     );
   }
   const userInput = parseName(ctx);
-  ctx.session.userName = userInput;
+  ctx.session.local_name = userInput;
 
   ctx.reply(
     `Фамилия: *${userInput.second_name}*\nИмя: *${userInput.first_name}*?\nэти данные видеть офис, вымышленные данные запрещены и караются штрафом! В дальнейшем изменить его будет нельзя\nОставляем?`,
@@ -43,18 +43,17 @@ greetingScene.on('message', (ctx) => {
 greetingScene.action('acceptGreeting', async (ctx) => {
   //   console.log(ctx.update.callback_query.from);
   //   console.log(ctx.session.userName);
-  const userName = ctx.session.userName;
+  const userName = ctx.session.local_name;
   ctx.reply(
     `Отлично, *${userName.second_name} ${userName.first_name}* сохранён!`
   );
-  const registerData = makeRegisterData(ctx, ctx.session.userName);
+  const registerData = makeRegisterData(ctx, ctx.session.local_name);
   ctx.scene.leave();
   console.log(
     `${userName.second_name} ${userName.first_name} вышел из сценария`
   );
   await registerUser(registerData);
   console.log('registration is over');
-  console.log(ctx);
   return backMenu(ctx);
 });
 
