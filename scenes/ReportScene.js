@@ -82,6 +82,7 @@ reportScene.action('preConfirmed', (ctx) => {
 });
 
 //слушаем ТЕКСТОВЫЙ ОТЧЕТ
+
 reportScene.on('text', (ctx) => {
   const reportFromUser = ctx.update.message.text;
   // console.log('TEXT!!!!');
@@ -106,17 +107,16 @@ reportScene.on('text', (ctx) => {
     reply_markup: confirmReport,
   });
 });
+
+//--------------------------------
+const map = { media: [] };
+map.resolve = () => {};
+// -------------------------------
 //слушаем ФОТО ОТЧЕТ
-reportScene.on('photo', (ctx) => {
-  // Слушаем MediaGroup--------------
-  if (!!ctx.message.media_group_id) {
-    console.log('mediagroup');
-    ctx.session.reportType || ctx.session.reportType == 'mediagroup';
-
-    if (!ctx.session.mediaGroup) ctx.session.mediaGroup = [];
-    ctx.session.mediaGroup.push(ctx.update.message);
-
-    // слушаем photo
+reportScene.on('photo', async (ctx) => {
+  // MediaGroup
+  if (ctx.update.message.media_group_id) {
+    return await handleMediaGroup(1000, ctx);
   } else {
     console.log('----photo----');
     ctx.session.reportType = 'photo';
@@ -124,13 +124,12 @@ reportScene.on('photo', (ctx) => {
     console.log(reportFromUser);
 
     ctx.session.photoReport = reportFromUser;
+
+    ctx.reply('Принял! Отправляем это начальству?', {
+      reply_markup: confirmReport,
+    });
   }
-  ctx.reply('Принял! Отправляем это начальству?', {
-    reply_markup: confirmReport,
-  });
 });
-//слушаем ФОТО ОТЧЕТ
-//
 
 // ---------------------------------------------------
 // Отправил отчёт в группу
@@ -179,6 +178,22 @@ reportScene.action('report_ok', async (ctx) => {
       );
     }
     // Обработка МЕДИАГРУППЫ
+    if (ctx.session.reportType == 'mediaGroup') {
+      console.log(ctx.session.mediaGroupReport);
+      const text = createReport(
+        ctx.session.mediaGroupReport.caption,
+        ctx.session.profession,
+        ctx.session.location,
+        ctx.session.local_name
+      );
+      const serializedMedia = ctx.session.mediaGroupReport.media;
+      serializedMedia[0].caption = text;
+      serializedMedia[0].parse_mode = 'HTML';
+      return ctx.telegram.sendMediaGroup(
+        process.env.TEST_GROUP_ID,
+        JSON.stringify(serializedMedia)
+      );
+    }
   } catch (error) {
     console.log(error);
   } finally {
@@ -207,4 +222,32 @@ module.exports = {
   reportScene,
 };
 
+function handleMediaGroup(timeout = 1000, ctx) {
+  const photoMessage = ctx.update.message;
+  const photoObj = { type: 'photo', media: photoMessage.photo.at(-1).file_id };
+  if (!!photoMessage.caption) map.caption = photoMessage.caption;
+  map.media.push(photoObj);
+  map.resolve(false);
+
+  return new Promise((resolve) => {
+    map.resolve = resolve;
+    setTimeout(() => {
+      resolve(true);
+    }, timeout);
+  }).then((value) => {
+    if (value == true) {
+      console.log('mediagroup');
+      delete map.resolve;
+      // создать  медиаgroup отчёт
+      ctx.session.reportType = 'mediaGroup';
+      ctx.session.mediaGroupReport = { ...map };
+
+      //отправить медиагруппу в чат
+      // ctx.telegram.sendMediaGroup(process.env.TEST_GROUP_ID, map.)
+      ctx.reply('Принял! Отправляем это начальству?', {
+        reply_markup: confirmReport,
+      });
+    }
+  });
+}
 // `Я: ${DICT[ctx.session.profession]}\nЛокация: ${DICT[ctx.session.location]}\n\nВыбери локацию: `,
