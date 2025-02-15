@@ -236,7 +236,11 @@ function handleMediaGroup(timeout = 1000, ctx) {
   };
   if (!!photoMessage.caption) map.caption = photoMessage.caption;
   map.media.push(photoObj);
-  map.resolve(false);
+  try {
+    map.resolve(false);
+  } catch (err) {
+    console.log('map.resolve(false) ' + err);
+  }
 
   return new Promise((resolve) => {
     map.resolve = resolve;
