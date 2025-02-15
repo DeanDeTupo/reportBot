@@ -41,20 +41,25 @@ greetingScene.on('message', (ctx) => {
 
 // ОК, Регистрируем
 greetingScene.action('acceptGreeting', async (ctx) => {
-  //   console.log(ctx.update.callback_query.from);
-  //   console.log(ctx.session.userName);
   const userName = ctx.session.local_name;
-  ctx.reply(
-    `Отлично, *${userName.second_name} ${userName.first_name}* сохранён!`
-  );
   const registerData = makeRegisterData(ctx, ctx.session.local_name);
-  ctx.scene.leave();
   console.log(
     `${userName.second_name} ${userName.first_name} вышел из сценария`
   );
-  await registerUser(registerData);
-  console.log('registration is over');
-  return backMenu(ctx);
+  try {
+    await registerUser(registerData);
+    ctx.reply(
+      `Отлично, *${userName.second_name} ${userName.first_name}* сохранён!`
+    );
+    ctx.scene.leave();
+    console.log('registration is over');
+    return backMenu(ctx);
+  } catch (err) {
+    console.log(error);
+    ctx.reply(`Что-то пошло не так, упс...Может попробуем заново?`);
+    ctx.scene.leave();
+    return start;
+  }
 });
 
 // Переписываем
