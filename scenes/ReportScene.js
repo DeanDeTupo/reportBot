@@ -112,6 +112,7 @@ reportScene.on('text', (ctx) => {
 const map = { media: [] };
 map.resolve = () => {};
 // -------------------------------
+
 //слушаем ФОТО ОТЧЕТ
 reportScene.on('photo', async (ctx) => {
   // MediaGroup
@@ -224,6 +225,34 @@ module.exports = {
   reportScene,
 };
 
+function handleMediaGroup(timeout = 1000, ctx) {
+  const photoMessage = ctx.update.message;
+  const photoObj = { type: 'photo', media: photoMessage.photo.at(-1).file_id };
+  if (!!photoMessage.caption) map.caption = photoMessage.caption;
+  map.media.push(photoObj);
+  map.resolve(false);
+
+  return new Promise((resolve) => {
+    map.resolve = resolve;
+    setTimeout(() => {
+      resolve(true);
+    }, timeout);
+  }).then((value) => {
+    if (value == true) {
+      console.log('mediagroup');
+      delete map.resolve;
+      // создать  медиаgroup отчёт
+      ctx.session.reportType = 'mediaGroup';
+      ctx.session.mediaGroupReport = { ...map };
+
+      //отправить медиагруппу в чат
+      // ctx.telegram.sendMediaGroup(process.env.TEST_GROUP_ID, map.)
+      ctx.reply('Принял! Отправляем это начальству?', {
+        reply_markup: confirmReport,
+      });
+    }
+  });
+}
 function handleMediaGroup(timeout = 1000, ctx) {
   const photoMessage = ctx.update.message;
   const photoObj = { type: 'photo', media: photoMessage.photo.at(-1).file_id };
