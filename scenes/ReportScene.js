@@ -227,7 +227,11 @@ module.exports = {
 
 function handleMediaGroup(timeout = 1000, ctx) {
   const photoMessage = ctx.update.message;
-  const photoObj = { type: 'photo', media: photoMessage.photo.at(-1).file_id };
+  const photoSetLength = photoMessage.photo.length;
+  const photoObj = {
+    type: 'photo',
+    media: photoMessage.photo[photoSetLength - 1].file_id,
+  };
   if (!!photoMessage.caption) map.caption = photoMessage.caption;
   map.media.push(photoObj);
   map.resolve(false);
@@ -253,32 +257,5 @@ function handleMediaGroup(timeout = 1000, ctx) {
     }
   });
 }
-function handleMediaGroup(timeout = 1000, ctx) {
-  const photoMessage = ctx.update.message;
-  const photoObj = { type: 'photo', media: photoMessage.photo.at(-1).file_id };
-  if (!!photoMessage.caption) map.caption = photoMessage.caption;
-  map.media.push(photoObj);
-  map.resolve(false);
 
-  return new Promise((resolve) => {
-    map.resolve = resolve;
-    setTimeout(() => {
-      resolve(true);
-    }, timeout);
-  }).then((value) => {
-    if (value == true) {
-      console.log('mediagroup');
-      delete map.resolve;
-      // создать  медиаgroup отчёт
-      ctx.session.reportType = 'mediaGroup';
-      ctx.session.mediaGroupReport = { ...map };
-
-      //отправить медиагруппу в чат
-      // ctx.telegram.sendMediaGroup(process.env.TEST_GROUP_ID, map.)
-      ctx.reply('Принял! Отправляем это начальству?', {
-        reply_markup: confirmReport,
-      });
-    }
-  });
-}
 // `Я: ${DICT[ctx.session.profession]}\nЛокация: ${DICT[ctx.session.location]}\n\nВыбери локацию: `,
