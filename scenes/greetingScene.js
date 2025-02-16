@@ -43,12 +43,12 @@ greetingScene.on('message', (ctx) => {
 greetingScene.action('acceptGreeting', async (ctx) => {
   const userName = ctx.session.local_name;
   const registerData = makeRegisterData(ctx, ctx.session.local_name);
-  console.log(
-    `${userName.second_name} ${userName.first_name} вышел из сценария`
-  );
+  // console.log(
+  //   `${userName.second_name} ${userName.first_name} вышел из сценария`
+  // );
   try {
     await registerUser(registerData);
-    ctx.reply(
+    await ctx.reply(
       `Отлично, *${userName.second_name} ${userName.first_name}* сохранён!`
     );
     ctx.scene.leave();

@@ -1,9 +1,9 @@
-require("dotenv").config();
-const { Telegraf, Markup, Stage, session } = require("telegraf");
+require('dotenv').config();
+const { Telegraf, Markup, Stage, session } = require('telegraf');
 
-const { reportScene } = require("./scenes/ReportScene");
-const { greetingScene } = require("./scenes/greetingScene");
-const { start, backMenu } = require("./commands");
+const { reportScene } = require('./scenes/ReportScene');
+const { greetingScene } = require('./scenes/greetingScene');
+const { start, backMenu } = require('./commands');
 
 //создаём экземплр бота
 const bot = new Telegraf(process.env.API_KEY_BOT);
@@ -28,20 +28,21 @@ bot.use((ctx, next) => {
 // точка начала
 bot.start(start);
 // вход в сценарий отчёта
-bot.action("report", (ctx) => {
-  ctx.scene.enter("report");
+bot.action('report', (ctx) => {
+  if (!ctx.session.local_name) return ctx.scene.enter('greeting');
+  ctx.scene.enter('report');
 });
 
-bot.hears("report", (ctx) => {
-  ctx.scene.enter("report");
-});
-bot.action("greeting", (ctx) => {
-  ctx.scene.enter("greeting");
+// bot.hears("report", (ctx) => {
+//   ctx.scene.enter("report");
+// });
+bot.action('greeting', (ctx) => {
+  ctx.scene.enter('greeting');
 });
 
 // команда запуска бота с опциями
 bot.catch((err, ctx) => {
-  console.log("Error", err);
+  console.log('Error', err);
   bot.launch();
 });
 
@@ -50,9 +51,9 @@ bot.catch((err, ctx) => {
 // bot.launch({ dropPendingUpdates: true });
 bot.launch({ dropPendingUpdates: true });
 // bot.startPolling();
-// bot.on('message', async (ctx, next) => {
-
-// });
+bot.on('message', async (ctx, next) => {
+  console.log(ctx.update.message.chat);
+});
 
 //пока нахуй
 // function wait(timeout = 2000) {

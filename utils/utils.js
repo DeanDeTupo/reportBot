@@ -32,24 +32,20 @@ async function checkUser(userObj) {
 }
 
 async function registerUser(userObj) {
-  console.log(userObj);
   let response;
   const data = await fs.readFile(dataPath, 'utf-8', (err, data) => {
     // что делать при ошибке чтения
     if (err) return console.log(err);
-    console.log(`прочитал: ${data}`);
   });
   const json = JSON.parse(data);
-  console.log(json.users);
   json.users.push(userObj);
-  console.log(json.users);
   const finalJson = JSON.stringify(json);
   await fs.writeFile(dataPath, finalJson, (err) => {
     if (err) console.log(err);
-    else
-      console.log(
-        `Данные ${userObj.local_name.first_name} ${userObj.local_name.second_name} записаны`
-      );
+    // else
+    //   console.log(
+    //     `Данные ${userObj.local_name.first_name} ${userObj.local_name.second_name} записаны`
+    //   );
   });
 }
 

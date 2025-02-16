@@ -73,10 +73,7 @@ reportScene.action('to_location', (ctx) => {
 
 // Подтверждение Анкеты:
 reportScene.action('preConfirmed', (ctx) => {
-  // console.log(ctx.session);
-  // console.log(ctx.update);
   ctx.editMessageText(ctx.update.callback_query.message.text);
-  console.log(ctx.session);
 
   ctx.reply('А теперь напиши отчет одним сообщением');
 });
@@ -85,12 +82,8 @@ reportScene.action('preConfirmed', (ctx) => {
 
 reportScene.on('text', (ctx) => {
   const reportFromUser = ctx.update.message.text;
-  // console.log('TEXT!!!!');
-  // console.log(ctx.session);
 
   if (reportFromUser === '/start') {
-    console.log(1234);
-
     ctx.scene.leave();
     ctx.session.profession = null;
     ctx.session.location = null;
@@ -109,24 +102,20 @@ reportScene.on('text', (ctx) => {
 });
 
 //--------------------------------
-const map = { media: [] };
-map.resolve = (value) => {
-  Promise.resolve(value);
-};
+const map = new Map();
+// map.resolve = (value) => {
+//   Promise.resolve(value);
+// };
 // -------------------------------
 
 //слушаем ФОТО ОТЧЕТ
 reportScene.on('photo', async (ctx) => {
   // MediaGroup
   if (ctx.update.message.media_group_id) {
-    console.log(Date.now());
-
     return await handleMediaGroup(1500, ctx);
   } else {
-    console.log('----photo----');
     ctx.session.reportType = 'photo';
     const reportFromUser = ctx.message;
-    console.log(reportFromUser);
 
     ctx.session.photoReport = reportFromUser;
 
@@ -139,8 +128,7 @@ reportScene.on('photo', async (ctx) => {
 // ---------------------------------------------------
 // Отправил отчёт в группу
 reportScene.action('report_ok', async (ctx) => {
-  console.log(ctx.session);
-  await ctx.reply('Спасибо за отчёт');
+  // console.log(ctx.session);
 
   // Отправляем отчет в группу для отчётов - как обработать ошибку эту?
 
@@ -172,6 +160,8 @@ reportScene.action('report_ok', async (ctx) => {
         ctx.session.location,
         ctx.session.local_name
       );
+      ctx.session.reportType = null;
+      ctx.session.photoReport = null;
       return ctx.telegram.sendCopy(
         process.env.TEST_GROUP_ID,
         // message.chat.id,
@@ -194,13 +184,16 @@ reportScene.action('report_ok', async (ctx) => {
       const serializedMedia = ctx.session.mediaGroupReport.media;
       serializedMedia[0].caption = text;
       serializedMedia[0].parse_mode = 'HTML';
-      return ctx.telegram.sendMediaGroup(
+      ctx.telegram.sendMediaGroup(
         process.env.TEST_GROUP_ID,
         JSON.stringify(serializedMedia)
       );
     }
+    await ctx.reply('Спасибо за отчёт');
   } catch (error) {
     console.log(error);
+    ctx.reply('Что-то пошло не так... ');
+    return;
   } finally {
     ctx.scene.leave();
     return backMenu(ctx);
@@ -215,7 +208,6 @@ reportScene.action('report_ok', async (ctx) => {
 //ловим конец сценария
 reportScene.action('to_menu', (ctx) => {
   ctx.scene.leave();
-  console.log('вышел из сценария');
   return backMenu(ctx);
 });
 
@@ -228,35 +220,55 @@ module.exports = {
 };
 
 function handleMediaGroup(timeout = 1000, ctx) {
+  // для каждого часа свой new Map()
+  if (!map.get(ctx.update.message.chat.id)) {
+    map.set(ctx.update.message.chat.id, new Map());
+  }
+  // для каждого mediaGroupId - свой объект
+  const userMap = map.get(ctx.update.message.chat.id);
+  if (!userMap.get(ctx.update.message.media_group_id)) {
+    userMap.set(ctx.update.message.media_group_id, {
+      media: [],
+      resolve: (value) => {
+        Promise.resolve(value);
+      },
+    });
+  }
+
+  const messageGroup = userMap.get(ctx.update.message.media_group_id);
   const photoMessage = ctx.update.message;
   const photoSetLength = photoMessage.photo.length;
   const photoObj = {
     type: 'photo',
     media: photoMessage.photo[photoSetLength - 1].file_id,
   };
-  if (!!photoMessage.caption) map.caption = photoMessage.caption;
-  map.media.push(photoObj);
+  // текстовую подпись выносим в отдельное свойство объекта
+  if (!!photoMessage.caption) messageGroup.caption = photoMessage.caption;
+
+  messageGroup.media.push(photoObj);
   try {
-    map.resolve(false);
+    messageGroup.resolve(false);
   } catch (err) {
-    console.log('map.resolve(false) ' + err);
+    console.log('messageGroup.resolve(false) ' + err);
   }
 
   return new Promise((resolve) => {
-    map.resolve = resolve;
+    messageGroup.resolve = resolve;
     setTimeout(() => {
       resolve(true);
     }, timeout);
   }).then((value) => {
     if (value == true) {
-      console.log('mediagroup');
-      delete map.resolve;
       // создать  медиаgroup отчёт
       ctx.session.reportType = 'mediaGroup';
-      ctx.session.mediaGroupReport = { ...map };
+      delete messageGroup.resolve;
+      ctx.session.mediaGroupReport = { ...messageGroup };
+      // очистить map:
+      userMap.delete(ctx.update.message.media_group_id);
+      if (userMap.size == 0) {
+        map.delete(ctx.update.message.chat.id);
+      }
 
-      //отправить медиагруппу в чат
-      // ctx.telegram.sendMediaGroup(process.env.TEST_GROUP_ID, map.)
       ctx.reply('Принял! Отправляем это начальству?', {
         reply_markup: confirmReport,
       });
@@ -264,4 +276,30 @@ function handleMediaGroup(timeout = 1000, ctx) {
   });
 }
 
-// `Я: ${DICT[ctx.session.profession]}\nЛокация: ${DICT[ctx.session.location]}\n\nВыбери локацию: `,
+/**
+ * mediaGroup = [{"type": "photo", "media": "file_id"}, ... {}]
+ *
+map  = {
+  chat_id1: {
+    mediaGroup1: {
+      media: [],
+      resolve: (value) => {Promise.resolve(value)}
+    },
+    mediaGroup2: {
+      media: [],
+      resolve: (value) => {Promise.resolve(value)}
+    },
+  },
+  chat_id2: {
+    mediaGroup1: {
+      media: [],
+      resolve: (value) => {Promise.resolve(value)}
+    },
+    mediaGroup2: {
+      media: [],
+      resolve: (value) => {Promise.resolve(value)}
+    },
+  },
+
+}
+ */
