@@ -20,6 +20,8 @@ const reportScene = new BaseScene('report');
 const { start, backMenu } = require('../commands');
 const { DICT } = require('../utils/dictionary');
 
+const CHAT_ID = process.env.GROUP_ID;
+
 //сработает, когда запустим сценарий reportScene
 
 reportScene.enter(async (ctx, next) => {
@@ -135,8 +137,8 @@ reportScene.action('report_ok', async (ctx) => {
   try {
     // для текстовых отчётов
     if (ctx.session.reportType === 'text') {
-      return ctx.telegram.sendMessage(
-        process.env.TEST_GROUP_ID,
+      await ctx.telegram.sendMessage(
+        CHAT_ID,
         createReport(
           ctx.session.reportText,
           ctx.session.profession,
@@ -162,8 +164,8 @@ reportScene.action('report_ok', async (ctx) => {
       );
       ctx.session.reportType = null;
       ctx.session.photoReport = null;
-      return ctx.telegram.sendCopy(
-        process.env.TEST_GROUP_ID,
+      await ctx.telegram.sendCopy(
+        CHAT_ID,
         // message.chat.id,
         message,
         {
@@ -184,10 +186,7 @@ reportScene.action('report_ok', async (ctx) => {
       const serializedMedia = ctx.session.mediaGroupReport.media;
       serializedMedia[0].caption = text;
       serializedMedia[0].parse_mode = 'HTML';
-      ctx.telegram.sendMediaGroup(
-        process.env.TEST_GROUP_ID,
-        JSON.stringify(serializedMedia)
-      );
+      ctx.telegram.sendMediaGroup(CHAT_ID, JSON.stringify(serializedMedia));
     }
     await ctx.reply('Спасибо за отчёт');
   } catch (error) {
