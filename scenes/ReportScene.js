@@ -139,8 +139,6 @@ reportScene.action('report_ok', async (ctx) => {
     if (ctx.session.reportType === 'text') {
       await ctx.telegram.sendMessage(
         CHAT_ID,
-      await ctx.telegram.sendMessage(
-        CHAT_ID,
         createReport(
           ctx.session.reportText,
           ctx.session.profession,
@@ -168,8 +166,6 @@ reportScene.action('report_ok', async (ctx) => {
       ctx.session.photoReport = null;
       await ctx.telegram.sendCopy(
         CHAT_ID,
-      await ctx.telegram.sendCopy(
-        CHAT_ID,
         // message.chat.id,
         message,
         {
@@ -190,7 +186,6 @@ reportScene.action('report_ok', async (ctx) => {
       const serializedMedia = ctx.session.mediaGroupReport.media;
       serializedMedia[0].caption = text;
       serializedMedia[0].parse_mode = 'HTML';
-      ctx.telegram.sendMediaGroup(CHAT_ID, JSON.stringify(serializedMedia));
       ctx.telegram.sendMediaGroup(CHAT_ID, JSON.stringify(serializedMedia));
     }
     await ctx.reply('Спасибо за отчёт');
