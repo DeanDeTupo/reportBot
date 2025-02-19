@@ -11,7 +11,7 @@ async function checkUser(userObj) {
   //     if (err) return console.log(err);
   //     console.log(`прочитал: ${data}`);
   //   });
-  // console.log(data);
+  console.log('запрос в БД');
   // json - это данные, которые мы прочитали
   const json = JSON.parse(data);
 
@@ -49,8 +49,25 @@ async function registerUser(userObj) {
   });
 }
 
+async function setUserNotification(id, status) {
+  const data = await fs.readFile(dataPath, 'utf-8', (err, data) => {
+    // что делать при ошибке чтения
+    if (err) return console.log(err);
+  });
+  const json = JSON.parse(data);
+  const user = json.users.find((user) => user.id == id);
+  if (user.enableNotify === status) {
+    return;
+  }
+  user.enableNotify = status;
+  const finalJson = JSON.stringify(json);
+  await fs.writeFile(dataPath, finalJson, (err) => {
+    if (err) console.log(err);
+  });
+}
+
 function isInData(data, value) {
   return data.users.find((elem) => elem.id == value.id);
 }
 
-module.exports = { checkUser, registerUser };
+module.exports = { checkUser, registerUser, setUserNotification };

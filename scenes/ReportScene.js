@@ -195,7 +195,7 @@ reportScene.action('report_ok', async (ctx) => {
     return;
   } finally {
     ctx.scene.leave();
-    return backMenu(ctx);
+    return start(ctx);
   }
 });
 

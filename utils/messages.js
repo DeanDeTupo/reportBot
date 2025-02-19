@@ -7,4 +7,8 @@ const createReport = (text, profession, location, nameObj) => {
 ${!!text ? `<blockquote>${text}</blockquote>` : ''}`;
 };
 
-module.exports = { createReport };
+function notifyStatusMessage(status) {
+  return `Напоминания *${status ? 'ВКЛЮЧЕНЫ' : 'ВЫКЛЮЧЕНЫ'}*`;
+}
+
+module.exports = { createReport, notifyStatusMessage };
