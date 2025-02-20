@@ -14,7 +14,7 @@ const {
   preConfirm,
   confirmReport,
 } = require('../utils/buttons');
-const { createReport } = require('../utils/messages');
+const { createReport, textLengthWarning } = require('../utils/messages');
 
 const reportScene = new BaseScene('report');
 const { start, backMenu } = require('../commands');
@@ -80,24 +80,32 @@ reportScene.action('preConfirmed', (ctx) => {
   ctx.reply('А теперь напиши отчет одним сообщением');
 });
 
+/*
+ctx.session.report = {
+  reportType: 'text/photo/mediaGroup,
+  reportText: '...text...',
+  reportMedia: [{type: 'photo', media: file_id}, ..., {}]
+}
+*/
 //слушаем ТЕКСТОВЫЙ ОТЧЕТ
 
 reportScene.on('text', (ctx) => {
-  const reportFromUser = ctx.update.message.text;
-
-  if (reportFromUser === '/start') {
+  if (ctx.update.message.text === '/start') {
     ctx.scene.leave();
     ctx.session.profession = null;
     ctx.session.location = null;
-    return backMenu;
+    return backMenu(ctx);
   }
-  ctx.session.reportType = 'text';
-  ctx.session.reportText = reportFromUser;
-  if (reportFromUser.length < 10) {
+  if (ctx.update.message.text.length < 10) {
     ctx.reply('слишком мало! пиши нормальный отчет!');
-    ctx.session.report = null;
     return;
   }
+  const reportFromUser = {
+    reportType: 'text',
+    reportText: ctx.update.message.text,
+  };
+
+  ctx.session.report = reportFromUser;
   ctx.reply('Принял! Отправляем это начальству?', {
     reply_markup: confirmReport,
   });
@@ -116,31 +124,47 @@ reportScene.on('photo', async (ctx) => {
   if (ctx.update.message.media_group_id) {
     return await handleMediaGroup(1500, ctx);
   } else {
-    ctx.session.reportType = 'photo';
-    const reportFromUser = ctx.message;
+    const photoArrayLength = ctx.update.message.photo.length;
+    const reportFromUser = {
+      reportType: 'photo',
+      reportText: ctx.update.message.caption,
+      reportMedia: [
+        {
+          type: 'photo',
+          media: ctx.update.message.photo[photoArrayLength - 1].file_id,
+        },
+      ],
+    };
 
-    ctx.session.photoReport = reportFromUser;
-
-    ctx.reply('Принял! Отправляем это начальству?', {
-      reply_markup: confirmReport,
+    ctx.session.report = reportFromUser;
+  }
+  if (
+    !!ctx.session.report.reportText &&
+    ctx.session.report.reportText.length > 1024
+  ) {
+    console.log(
+      'длина отчета: ' + ctx.session.report.reportText.length + ' символов'
+    );
+    return ctx.reply(textLengthWarning(ctx.session.report.reportText), {
+      parse_mode: 'HTML',
     });
   }
+
+  ctx.reply('Принял! Отправляем это начальству?', {
+    reply_markup: confirmReport,
+  });
 });
 
 // ---------------------------------------------------
 // Отправил отчёт в группу
 reportScene.action('report_ok', async (ctx) => {
-  // console.log(ctx.session);
-
-  // Отправляем отчет в группу для отчётов - как обработать ошибку эту?
-
   try {
     // для текстовых отчётов
-    if (ctx.session.reportType === 'text') {
+    if (ctx.session.report.reportType === 'text') {
       await ctx.telegram.sendMessage(
         CHAT_ID,
         createReport(
-          ctx.session.reportText,
+          ctx.session.report.reportText,
           ctx.session.profession,
           ctx.session.location,
           ctx.session.local_name
@@ -152,67 +176,45 @@ reportScene.action('report_ok', async (ctx) => {
       );
     }
     //для фото отчёта
-    if (ctx.session.reportType == 'photo') {
-      const message = ctx.session.photoReport;
-
+    if (ctx.session.report.reportType == 'photo') {
       // оформим сообщение
-      message.caption = createReport(
-        message.caption,
+      const reportText = createReport(
+        ctx.session.report.reportText,
         ctx.session.profession,
         ctx.session.location,
         ctx.session.local_name
       );
-      ctx.session.reportType = null;
-      ctx.session.photoReport = null;
-      await ctx.telegram.sendCopy(
+      const mediaGroupCaptionText = { caption: reportText, parse_mode: 'HTML' };
+      // add report text as mediaGroup caption
+      Object.assign(ctx.session.report.reportMedia[0], mediaGroupCaptionText);
+      const messageMedia = JSON.stringify(ctx.session.report.reportMedia);
+      await ctx.telegram.sendMediaGroup(
         CHAT_ID,
         // message.chat.id,
-        message,
+        messageMedia,
         {
           disable_notification: true,
           parse_mode: 'HTML',
         }
       );
     }
-    // Обработка МЕДИАГРУППЫ
-    if (ctx.session.reportType == 'mediaGroup') {
-      // console.log(ctx.session.mediaGroupReport);
-      const text = createReport(
-        ctx.session.mediaGroupReport.caption,
-        ctx.session.profession,
-        ctx.session.location,
-        ctx.session.local_name
-      );
-      const serializedMedia = ctx.session.mediaGroupReport.media;
-      serializedMedia[0].caption = text;
-      serializedMedia[0].parse_mode = 'HTML';
-      ctx.telegram.sendMediaGroup(CHAT_ID, JSON.stringify(serializedMedia));
-    }
+
     await ctx.reply('Спасибо за отчёт');
   } catch (error) {
     console.log(error);
     ctx.reply('Что-то пошло не так... ');
     return;
   } finally {
+    delete ctx.session.report;
     ctx.scene.leave();
-    return backMenu(ctx);
   }
 });
-
-// Отчёт НЕ ОК
-// reportScene.action('report_not_ok', (ctx) => {
-//   ctx.editMessageText('')
-// });
 
 //ловим конец сценария
 reportScene.action('to_menu', (ctx) => {
   ctx.scene.leave();
-  return backMenu(ctx);
+  return start(ctx);
 });
-
-// reportScene.on((err, ctx) => {
-//   console.log("Error", err);
-// });
 
 module.exports = {
   reportScene,
@@ -259,9 +261,14 @@ function handleMediaGroup(timeout = 1000, ctx) {
   }).then((value) => {
     if (value == true) {
       // создать  медиаgroup отчёт
-      ctx.session.reportType = 'mediaGroup';
+      // ctx.session.reportType = 'mediaGroup';
       delete messageGroup.resolve;
-      ctx.session.mediaGroupReport = { ...messageGroup };
+      const reportFromUser = {
+        reportType: 'photo',
+        reportText: messageGroup.caption,
+        reportMedia: messageGroup.media,
+      };
+      ctx.session.report = reportFromUser;
       // очистить map:
       userMap.delete(ctx.update.message.media_group_id);
       if (userMap.size == 0) {

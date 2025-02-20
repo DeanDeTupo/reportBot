@@ -8,14 +8,17 @@ const start = async (ctx) => {
   // запустить функцию проверки на знакомство
   // если есть в базе, то продолжить и передать данные дальше'
   // console.log(ctx.update.message);
-  const checkData = await checkUser(
-    ctx.update.message.from || ctx.update.callback_query.from
-  ); //передаём ctx команды /start
+  const userId = ctx.update?.message?.from || ctx.update.callback_query.from;
+  const checkData = await checkUser(userId); //передаём ctx команды /start
+  console.log(userId);
+  console.log(checkData);
   // если пользователь есть
   // console.log(checkData.status);
   if (!!checkData.data) {
     ctx.session.local_name = checkData.data.local_name;
-    // console.log(ctx.session.local_name);
+    ctx.session.id = checkData.data.id;
+    ctx.session.enableNotify = checkData.data.enableNotify || false;
+    console.log(ctx.session);
     ctx.reply(`🤖 Я принимаю отчёты`, { reply_markup: mainMenu });
   }
   if (!checkData.data) {
