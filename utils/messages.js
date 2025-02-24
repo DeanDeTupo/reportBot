@@ -1,9 +1,15 @@
 const { DICT } = require('./dictionary');
+
+const dict = { '<': '&lt;', '>': '&gt;', '&': '&amp;' };
+const htmlParser = (text) => {
+  return text.replace(/\<|\>|\&/g, (match) => dict[match]);
+};
 const createReport = (text, profession, location, nameObj) => {
+  const pastedText = !!text ? htmlParser(text) : '';
   return `📍 <b>${DICT[location]}</b>
 💰 <b>${DICT[profession]}</b>: ${nameObj.second_name} ${nameObj.first_name}
 
-${!!text ? `<blockquote>${text}</blockquote>` : ''}`;
+${!!pastedText ? `<blockquote>${pastedText}</blockquote>` : ''}`;
 };
 
 const textLengthWarning = (text) => {
