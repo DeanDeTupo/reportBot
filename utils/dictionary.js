@@ -5,11 +5,12 @@ const DICTIONARY = {
   R2: 'Р2',
   R3: 'Р3',
   R4: 'Р4',
-  MKR: 'МКР',
   ZUZU: 'ЗуЗу',
   N3: 'Н3',
   N5: 'Н5',
+  MKR: 'МКР',
   MKN: 'МКН',
+  MK: 'МК',
   CAFE: 'Кафе',
   FREUD: 'Фрейд',
   VELICAN: 'Великан',
@@ -20,6 +21,7 @@ const DICTIONARY = {
   STEKLO: 'Стекло',
   DVD: 'ДВД',
   MOVIE: 'Муви',
+  BMF: 'БМФ',
 };
 
 module.exports = { DICT: DICTIONARY };

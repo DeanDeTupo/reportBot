@@ -13,8 +13,10 @@ ${!!pastedText ? `<blockquote>${pastedText}</blockquote>` : ''}`;
 };
 
 const textLengthWarning = (text) => {
-  return `Слишком длинный текст!
-  Сократи его хотябы на <b>${text.length - 1024}</b> символов и отправь заново`;
+  return `<b>Слишком длинный текст!</b> Такое отправлять не буду
+  Сократи его хотябы на <b>${
+    text.length - 1024
+  }</b> символов и отправь отчет заново`;
 };
 
 module.exports = { createReport, textLengthWarning };

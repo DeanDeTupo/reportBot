@@ -13,6 +13,7 @@ const {
   setPhotoLocation,
   preConfirm,
   confirmReport,
+  backToLocation,
 } = require('../utils/buttons');
 const { createReport, textLengthWarning } = require('../utils/messages');
 
@@ -77,7 +78,7 @@ reportScene.action('to_location', (ctx) => {
 reportScene.action('preConfirmed', (ctx) => {
   ctx.editMessageText(ctx.update.callback_query.message.text);
 
-  ctx.reply('А теперь напиши отчет одним сообщением');
+  ctx.reply('А теперь напиши отчет одним сообщением, прикрепи фотки');
 });
 
 /*
@@ -147,6 +148,7 @@ reportScene.on('photo', async (ctx) => {
     );
     return ctx.reply(textLengthWarning(ctx.session.report.reportText), {
       parse_mode: 'HTML',
+      reply_markup: backToLocation,
     });
   }
 
@@ -199,7 +201,7 @@ reportScene.action('report_ok', async (ctx) => {
       );
     }
 
-    await ctx.reply('Спасибо за отчёт');
+    await ctx.reply('✅Спасибо за отчёт');
   } catch (error) {
     console.log(error);
     ctx.reply('Что-то пошло не так... ');
