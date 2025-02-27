@@ -1,5 +1,3 @@
-const { Markup } = require('telegraf');
-
 const mainMenu = {
   inline_keyboard: [[{ text: 'Написать отчёт', callback_data: 'report' }]],
 };
@@ -11,10 +9,7 @@ const greeting = {
 };
 
 const applyGreeting = {
-  inline_keyboard: [
-    [{ text: 'Всё верно', callback_data: 'acceptGreeting' }],
-    [{ text: 'Изменить', callback_data: 'rejectGreeting' }],
-  ],
+  inline_keyboard: [[{ text: 'Всё верно', callback_data: 'acceptGreeting' }]],
 };
 
 const backToLocation = {
