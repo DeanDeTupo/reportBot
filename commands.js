@@ -8,10 +8,12 @@ const start = async (ctx) => {
   // запустить функцию проверки на знакомство
   // если есть в базе, то продолжить и передать данные дальше'
   // console.log(ctx.update.message);
-  const userId = ctx.update?.message?.from || ctx.update.callback_query.from;
+  const userId =
+    (!!ctx.update.message ? ctx.update.message.from : undefined) ||
+    ctx.update.callback_query.from;
   const checkData = await checkUser(userId); //передаём ctx команды /start
-  console.log(userId);
-  console.log(checkData);
+  // console.log(userId);
+  // console.log(checkData);
   // если пользователь есть
   // console.log(checkData.status);
   if (!!checkData.data) {

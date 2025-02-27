@@ -34,7 +34,7 @@ greetingScene.on('message', (ctx) => {
   ctx.session.local_name = userInput;
 
   ctx.reply(
-    `Фамилия: *${userInput.second_name}*\nИмя: *${userInput.first_name}*?\nэти данные видеть офис, вымышленные данные запрещены и караются штрафом! В дальнейшем изменить его будет нельзя\nОставляем?`,
+    `Фамилия: *${userInput.second_name}*\nИмя: *${userInput.first_name}*?\nэти данные будет видеть офис, вымышленные данные запрещены и караются штрафом! В дальнейшем изменить его будет нельзя\nОставляем?`,
     { parse_mode: 'Markdown', reply_markup: applyGreeting }
   );
 });
@@ -58,7 +58,7 @@ greetingScene.action('acceptGreeting', async (ctx) => {
     console.log(err);
     ctx.reply(`Что-то пошло не так, упс...Может попробуем заново?`);
     ctx.scene.leave();
-    return start;
+    return start(ctx);
   }
 });
 
