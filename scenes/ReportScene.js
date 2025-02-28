@@ -17,7 +17,7 @@ const {
 const { createReport } = require('../utils/messages');
 
 const reportScene = new BaseScene('report');
-const { start, backMenu } = require('../commands');
+const { toStart, backMenu } = require('../commands');
 const { DICT } = require('../utils/dictionary');
 
 const CHAT_ID = process.env.GROUP_ID;
@@ -195,7 +195,7 @@ reportScene.action('report_ok', async (ctx) => {
     return;
   } finally {
     ctx.scene.leave();
-    return start(ctx);
+    return toStart(ctx);
   }
 });
 

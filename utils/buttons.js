@@ -17,7 +17,7 @@ const notify = (status) => {
           callback_data: 'notifyToggle',
         },
       ],
-      [{ text: '<<назад', callback_data: 'exit_notify' }],
+      [{ text: 'сохранить и выйти', callback_data: 'exit_notify' }],
     ],
   };
 };

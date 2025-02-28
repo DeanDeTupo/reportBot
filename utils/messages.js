@@ -8,7 +8,9 @@ ${!!text ? `<blockquote>${text}</blockquote>` : ''}`;
 };
 
 function notifyStatusMessage(status) {
-  return `Напоминания *${status ? 'ВКЛЮЧЕНЫ' : 'ВЫКЛЮЧЕНЫ'}*`;
+  return `Напоминания *${
+    status ? 'ВКЛЮЧЕНЫ' : 'ВЫКЛЮЧЕНЫ'
+  }*\nИзменения вступят в силу после нажатия кнопки _сохранить и выйти_`;
 }
 
 module.exports = { createReport, notifyStatusMessage };

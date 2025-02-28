@@ -34,11 +34,9 @@ notifyScene.action('exit_notify', async (ctx, next) => {
   try {
     await setUserNotification(ctx.session.id, ctx.session.enableNotify);
   } catch (err) {
-    console.log(err);
+    console.log('Pizda', err);
   }
-  console.log(1);
   ctx.scene.leave();
-  console.log(2);
   return backMenu(ctx);
 });
 

@@ -5,7 +5,12 @@ const { reportScene } = require('./scenes/ReportScene');
 const { greetingScene } = require('./scenes/greetingScene');
 const { start, backMenu } = require('./commands');
 const { notifyScene } = require('./scenes/notifyScene');
-const { getNotificationList } = require('./utils/utils');
+const {
+  getNotificationList,
+  checkUser,
+  refreshData,
+  checkUserData,
+} = require('./utils/utils');
 
 //создаём экземплр бота
 const bot = new Telegraf(process.env.API_KEY_BOT);
@@ -25,15 +30,26 @@ bot.use((ctx, next) => {
 // точка начала
 bot.start(start);
 // вход в сценарий отчёта
-bot.action('report', (ctx) => {
-  if (!ctx.session.local_name) return ctx.scene.enter('greeting');
+bot.action('report', async (ctx) => {
+  if (!ctx.session.id) {
+    const isUser = await checkUserData(ctx);
+    if (!isUser) return ctx.scene.enter('greeting');
+  }
+
   ctx.scene.enter('report');
 });
 
 bot.action('greeting', (ctx) => {
   ctx.scene.enter('greeting');
 });
-bot.action('notify', (ctx) => {
+bot.action('notify', async (ctx) => {
+  // убрать
+
+  if (!ctx.session.id) {
+    const isUser = await checkUserData(ctx);
+    if (!isUser) return ctx.scene.enter('greeting');
+  }
+
   ctx.scene.enter('notify');
 });
 
@@ -86,7 +102,6 @@ console.log(typeof time);
 const nowTS = new Date().getTime();
 // get timestamp  of purpose time today
 const timeout = purposeTS - nowTS;
-console.log(timeout);
 const DAY_LENGTH = 24 * 60 * 60 * 1000;
 const delay = timeout > 0 ? timeout : DAY_LENGTH + timeout;
 console.log(delay);

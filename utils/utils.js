@@ -1,18 +1,13 @@
 //функция для записи в json
 const fs = require('fs').promises;
 
-const dataPath = './data/personalData.json';
+const DATA_PATH = './data/personalData.json';
 
 async function checkUser(userObj) {
   let response;
-  const data = await fs.readFile(dataPath, { encoding: 'utf-8' });
-  //   const data = await fs.readFile(dataPath, 'utf-8', (err, data) => {
-  //     // что делать при ошибке чтения
-  //     if (err) return console.log(err);
-  //     console.log(`прочитал: ${data}`);
-  //   });
+  const data = await fs.readFile(DATA_PATH, { encoding: 'utf-8' });
+
   console.log('запрос в БД');
-  // json - это данные, которые мы прочитали
   const json = JSON.parse(data);
 
   const userData = isInData(json, userObj);
@@ -33,14 +28,14 @@ async function checkUser(userObj) {
 
 async function registerUser(userObj) {
   let response;
-  const data = await fs.readFile(dataPath, 'utf-8', (err, data) => {
+  const data = await fs.readFile(DATA_PATH, 'utf-8', (err, data) => {
     // что делать при ошибке чтения
     if (err) return console.log(err);
   });
   const json = JSON.parse(data);
   json.users.push(userObj);
   const finalJson = JSON.stringify(json);
-  await fs.writeFile(dataPath, finalJson, (err) => {
+  await fs.writeFile(DATA_PATH, finalJson, (err) => {
     if (err) console.log(err);
     // else
     //   console.log(
@@ -50,7 +45,7 @@ async function registerUser(userObj) {
 }
 
 async function setUserNotification(id, status) {
-  const data = await fs.readFile(dataPath, 'utf-8', (err, data) => {
+  const data = await fs.readFile(DATA_PATH, 'utf-8', (err, data) => {
     // что делать при ошибке чтения
     if (err) return console.log(err);
   });
@@ -61,13 +56,13 @@ async function setUserNotification(id, status) {
   }
   user.enableNotify = status;
   const finalJson = JSON.stringify(json);
-  await fs.writeFile(dataPath, finalJson, (err) => {
+  await fs.writeFile(DATA_PATH, finalJson, (err) => {
     if (err) console.log(err);
   });
 }
 
 async function getNotificationList() {
-  const rawdata = await fs.readFile(dataPath, 'utf-8', (err, data) => {
+  const rawdata = await fs.readFile(DATA_PATH, 'utf-8', (err, data) => {
     if (err) console.log(err);
   });
   const users = JSON.parse(rawdata).users;
@@ -89,9 +84,25 @@ function isInData(data, value) {
 // }
 // date();
 
+async function checkUserData(ctx) {
+  const request = await checkUser(ctx.update.callback_query.from);
+  const userData = request.data;
+  if (!userData) return false;
+  refreshData(userData, ctx);
+  return true;
+}
+
+function refreshData(DBDate, ctx) {
+  ctx.session.local_name = DBDate.local_name;
+  ctx.session.id = DBDate.id;
+  ctx.session.enableNotify = DBDate.enableNotify || false;
+}
+
 module.exports = {
   checkUser,
   registerUser,
   setUserNotification,
   getNotificationList,
+  refreshData,
+  checkUserData,
 };

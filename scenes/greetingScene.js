@@ -3,7 +3,7 @@ const { BaseScene, session } = require('telegraf');
 const { greeting, applyGreeting } = require('../utils/buttons');
 
 const greetingScene = new BaseScene('greeting');
-const { backMenu, start } = require('../commands');
+const { toStart, start } = require('../commands');
 const { parse } = require('dotenv');
 const { registerUser } = require('../utils/utils');
 
@@ -49,16 +49,17 @@ greetingScene.action('acceptGreeting', async (ctx) => {
   try {
     await registerUser(registerData);
     await ctx.reply(
-      `Отлично, *${userName.second_name} ${userName.first_name}* сохранён!`
+      `Отлично, *${userName.second_name} ${userName.first_name}* сохранён!`,
+      { parse_mode: 'Markdown' }
     );
     ctx.scene.leave();
     console.log('registration is over');
-    return backMenu(ctx);
   } catch (err) {
     console.log(err);
     ctx.reply(`Что-то пошло не так, упс...Может попробуем заново?`);
     ctx.scene.leave();
-    return start;
+  } finally {
+    toStart(ctx);
   }
 });
 
