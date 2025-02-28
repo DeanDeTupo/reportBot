@@ -4,14 +4,15 @@ const { mainMenu, greeting } = require('./utils/buttons');
 const { checkUser } = require('./utils/utils');
 
 const start = async (ctx) => {
+  //убираем обработку команд для групповых чатов
+  if (ctx.update.message.chat.id < 0) return;
   //сначала знакомство или проверка на знакомство
   // запустить функцию проверки на знакомство
   // если есть в базе, то продолжить и передать данные дальше'
   // console.log(ctx.update.message);
   const userId = ctx.update?.message?.from || ctx.update.callback_query.from;
   const checkData = await checkUser(userId); //передаём ctx команды /start
-  console.log(userId);
-  console.log(checkData);
+
   // если пользователь есть
   // console.log(checkData.status);
   if (!!checkData.data) {

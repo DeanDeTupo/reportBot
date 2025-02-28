@@ -66,8 +66,32 @@ async function setUserNotification(id, status) {
   });
 }
 
+async function getNotificationList() {
+  const rawdata = await fs.readFile(dataPath, 'utf-8', (err, data) => {
+    if (err) console.log(err);
+  });
+  const users = JSON.parse(rawdata).users;
+  return users.filter((user) => user.enableNotify === true);
+}
+
 function isInData(data, value) {
   return data.users.find((elem) => elem.id == value.id);
 }
 
-module.exports = { checkUser, registerUser, setUserNotification };
+// function date() {
+//   let now = new Date();
+//   const offset = now.getTimezoneOffset() / 60;
+//   let localTime = now.getTime() - offset * 3600 * 1000;
+//   console.log(now);
+//   console.log(now.getTimezoneOffset() / 60);
+//   console.log(new Date(localTime));
+//   // console.log(now.getTimezoneOffset() / 60);
+// }
+// date();
+
+module.exports = {
+  checkUser,
+  registerUser,
+  setUserNotification,
+  getNotificationList,
+};
