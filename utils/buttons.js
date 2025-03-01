@@ -1,7 +1,25 @@
 const { Markup } = require('telegraf');
 
 const mainMenu = {
-  inline_keyboard: [[{ text: 'Написать отчёт', callback_data: 'report' }]],
+  inline_keyboard: [
+    [{ text: 'Написать отчёт', callback_data: 'report' }],
+    [{ text: 'Напоминания', callback_data: 'notify' }],
+  ],
+};
+const notify = (status) => {
+  const state = status || false;
+  const checker = '✔️';
+  return {
+    inline_keyboard: [
+      [
+        {
+          text: `${state ? checker : ' '}Напоминать об отчёте`,
+          callback_data: 'notifyToggle',
+        },
+      ],
+      [{ text: 'сохранить и выйти', callback_data: 'exit_notify' }],
+    ],
+  };
 };
 
 const greeting = {
@@ -38,17 +56,14 @@ const setKassaLocation = {
     ],
     [
       { text: 'Р44️⃣', callback_data: 'loc_R4' },
-      { text: 'МК🔁', callback_data: 'loc_MK' },
+      { text: 'МКР🔁', callback_data: 'loc_MKR' },
     ],
     [{ text: 'Зу-Зу🐰', callback_data: 'loc_ZUZU' }],
     [
       { text: 'Н3☠️', callback_data: 'loc_N3' },
       { text: 'Н5🙃', callback_data: 'loc_N5' },
     ],
-    [
-      { text: 'МКР🔃', callback_data: 'loc_MKR' },
-      { text: 'МКН🔃', callback_data: 'loc_MKN' },
-    ],
+    [{ text: 'МКН🔃', callback_data: 'loc_MKN' }],
     [{ text: 'Фрейд🍡', callback_data: 'loc_FREUD' }],
     [{ text: 'Кафе🥐', callback_data: 'loc_CAFE' }],
 
@@ -104,5 +119,5 @@ module.exports = {
   confirmReport,
   greeting,
   applyGreeting,
-  backToLocation,
+  notify,
 };

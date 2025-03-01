@@ -19,4 +19,10 @@ const textLengthWarning = (text) => {
   }</b> символов и отправь отчет заново`;
 };
 
-module.exports = { createReport, textLengthWarning };
+function notifyStatusMessage(status) {
+  return `Напоминания *${
+    status ? 'ВКЛЮЧЕНЫ' : 'ВЫКЛЮЧЕНЫ'
+  }*\nБуду напоминать тебе про отчет в 20:00\n\nИзменения вступят в силу после нажатия кнопки _сохранить и выйти_`;
+}
+
+module.exports = { createReport, notifyStatusMessage, textLengthWarning };

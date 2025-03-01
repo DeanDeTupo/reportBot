@@ -18,7 +18,7 @@ const {
 const { createReport, textLengthWarning } = require('../utils/messages');
 
 const reportScene = new BaseScene('report');
-const { start, backMenu } = require('../commands');
+const { toStart, backMenu } = require('../commands');
 const { DICT } = require('../utils/dictionary');
 
 const CHAT_ID = process.env.GROUP_ID;
@@ -95,7 +95,7 @@ reportScene.on('text', (ctx) => {
     ctx.scene.leave();
     ctx.session.profession = null;
     ctx.session.location = null;
-    return backMenu(ctx);
+    return toStart(ctx);
   }
   if (ctx.update.message.text.length < 10) {
     ctx.reply('слишком мало! пиши нормальный отчет!');
@@ -209,13 +209,14 @@ reportScene.action('report_ok', async (ctx) => {
   } finally {
     delete ctx.session.report;
     ctx.scene.leave();
+    return toStart(ctx);
   }
 });
 
 //ловим конец сценария
 reportScene.action('to_menu', (ctx) => {
   ctx.scene.leave();
-  return start(ctx);
+  return backMenu(ctx);
 });
 
 module.exports = {
