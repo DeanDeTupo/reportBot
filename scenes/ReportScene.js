@@ -19,7 +19,8 @@ const { createReport, textLengthWarning } = require('../utils/messages');
 
 const reportScene = new BaseScene('report');
 const { toStart, backMenu } = require('../commands');
-const { DICT } = require('../utils/dictionary');
+const { DICT, REPORT_ORDER_LIST } = require('../utils/dictionary');
+const { REPORT_LIST } = require('../utils/events');
 
 const CHAT_ID = process.env.GROUP_ID;
 
@@ -186,6 +187,7 @@ reportScene.action('report_ok', async (ctx) => {
         ctx.session.location,
         ctx.session.local_name
       );
+      //добавляем текст как описание первой картинки
       const mediaGroupCaptionText = { caption: reportText, parse_mode: 'HTML' };
       // add report text as mediaGroup caption
       Object.assign(ctx.session.report.reportMedia[0], mediaGroupCaptionText);
@@ -200,7 +202,14 @@ reportScene.action('report_ok', async (ctx) => {
         }
       );
     }
+    const report_data = {
+      id: ctx.session.id,
+      second_name: ctx.session.local_name.second_name,
+      profession: ctx.session.profession,
+      location: ctx.session.location,
+    };
 
+    REPORT_LIST.push({ ...report_data });
     await ctx.reply('✅Спасибо за отчёт');
   } catch (error) {
     console.log(error);

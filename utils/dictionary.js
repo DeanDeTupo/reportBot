@@ -24,4 +24,35 @@ const DICTIONARY = {
   BMF: 'БМФ',
 };
 
-module.exports = { DICT: DICTIONARY };
+const REPORT_LIST = [
+  {
+    profession: 'fotographer',
+    location_order: [
+      'VELICAN',
+      'POBEG',
+      'ILLUSIONS',
+      'STRAH',
+      'STEKLO',
+      'KOSMOS',
+      'DVD',
+      'MOVIE',
+      'BMF',
+    ],
+  },
+  {
+    profession: 'kassir',
+    location_order: [
+      'R1',
+      'R2',
+      'R3',
+      'N3',
+      'N5',
+      'MKN',
+      'MKR',
+      'ZUZU',
+      'FREUD',
+    ],
+  },
+];
+
+module.exports = { DICT: DICTIONARY, REPORT_ORDER_LIST: REPORT_LIST };

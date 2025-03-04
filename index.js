@@ -11,6 +11,7 @@ const {
   refreshData,
   checkUserData,
 } = require('./utils/utils');
+const { everyDayReport, dailyClearReportList } = require('./utils/events');
 
 //создаём экземплр бота
 const bot = new Telegraf(process.env.API_KEY_BOT);
@@ -59,6 +60,9 @@ bot.catch((err, ctx) => {
 });
 
 // напоминание
+everyDayReport(bot);
+dailyClearReportList();
+
 async function sendNotification() {
   // взять список людей подписанных на уведомления
   const usersToNotify = await getNotificationList();
@@ -98,13 +102,12 @@ const purposeTS = createNotificationTime();
 // get current time
 
 let time = process.env.TIME;
-console.log(typeof time);
 const nowTS = new Date().getTime();
 // get timestamp  of purpose time today
 const timeout = purposeTS - nowTS;
 const DAY_LENGTH = 24 * 60 * 60 * 1000;
 const delay = timeout > 0 ? timeout : DAY_LENGTH + timeout;
-console.log(delay);
+// console.log(delay);
 setTimeout(async function everyDayNotify() {
   await sendNotification();
   setTimeout(everyDayNotify, DAY_LENGTH);
