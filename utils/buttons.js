@@ -55,17 +55,22 @@ const setKassaLocation = {
       { text: 'Р33️⃣', callback_data: 'loc_R3' },
     ],
     [
+      { text: 'Зу-Зу🐰', callback_data: 'loc_ZUZU' },
       { text: 'Р44️⃣', callback_data: 'loc_R4' },
-      { text: 'МКР🔁', callback_data: 'loc_MKR' },
     ],
-    [{ text: 'Зу-Зу🐰', callback_data: 'loc_ZUZU' }],
+    [
+      { text: 'МКР🔁', callback_data: 'loc_MKR' },
+      { text: 'МКН🔃', callback_data: 'loc_MKN' },
+    ],
+    [{ text: 'МК🔄', callback_data: 'loc_MK' }],
     [
       { text: 'Н3☠️', callback_data: 'loc_N3' },
       { text: 'Н5🙃', callback_data: 'loc_N5' },
     ],
-    [{ text: 'МКН🔃', callback_data: 'loc_MKN' }],
-    [{ text: 'Фрейд🍡', callback_data: 'loc_FREUD' }],
-    [{ text: 'Кафе🥐', callback_data: 'loc_CAFE' }],
+    [
+      { text: 'Фрейд🍡', callback_data: 'loc_FREUD' },
+      { text: 'Кафе🥐', callback_data: 'loc_CAFE' },
+    ],
 
     [{ text: 'назад🔙', callback_data: 'to_profession' }],
   ],

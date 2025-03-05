@@ -26,6 +26,22 @@ const DICTIONARY = {
 
 const REPORT_LIST = [
   {
+    profession: 'kassir',
+    location_order: [
+      'R1',
+      'R2',
+      'R3',
+      'N3',
+      'N5',
+      'ZUZU',
+      'FREUD',
+      'CAFE',
+      'MKN',
+      'MKR',
+      'R4',
+    ],
+  },
+  {
     profession: 'fotographer',
     location_order: [
       'VELICAN',
@@ -37,20 +53,6 @@ const REPORT_LIST = [
       'DVD',
       'MOVIE',
       'BMF',
-    ],
-  },
-  {
-    profession: 'kassir',
-    location_order: [
-      'R1',
-      'R2',
-      'R3',
-      'N3',
-      'N5',
-      'MKN',
-      'MKR',
-      'ZUZU',
-      'FREUD',
     ],
   },
 ];
