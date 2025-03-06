@@ -36,10 +36,12 @@ const REPORT_LIST = [
       'ZUZU',
       'FREUD',
       'CAFE',
+      'MK',
       'MKN',
       'MKR',
       'R4',
     ],
+    prefix: '💰',
   },
   {
     profession: 'fotographer',
@@ -54,6 +56,7 @@ const REPORT_LIST = [
       'MOVIE',
       'BMF',
     ],
+    prefix: '📷',
   },
 ];
 

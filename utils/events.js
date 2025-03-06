@@ -15,11 +15,13 @@ async function dailyClearReportList() {
 }
 
 function createReportBotMessage() {
+  let date = getCurrentDate() + '\n';
   let report = [];
   REPORT_ORDER_LIST.forEach((item) => {
     report.push(createProfessionList(item));
   });
-  return report.join('\n');
+
+  return date.concat(report.join('\n'));
 }
 // напоминание
 // sendNotification();
@@ -59,7 +61,7 @@ function createProfessionList(obj) {
   });
   //   console.log(subReport);
   const message = [];
-  message.push(DICT[obj.profession] + 'ы\n\n');
+  message.push(obj.prefix + DICT[obj.profession] + 'ы\n');
 
   subReport.forEach((userList, location) => {
     const status = userList.length !== 0 ? '✅' : '➖';
@@ -69,6 +71,13 @@ function createProfessionList(obj) {
     message.push(row);
   });
   return message.join('');
+}
+
+function getCurrentDate() {
+  let today = new Date();
+  let month = String(today.getMonth() + 1).padStart(2, '0');
+  let day = String(today.getDate()).padStart(2, '0');
+  return ''.concat(day, '.', month);
 }
 
 module.exports = { REPORT_LIST, everyDayReport, dailyClearReportList };
