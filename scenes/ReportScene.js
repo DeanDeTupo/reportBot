@@ -19,15 +19,16 @@ const { createReport, textLengthWarning } = require('../utils/messages');
 
 const reportScene = new BaseScene('report');
 const { toStart, backMenu } = require('../commands');
-const { DICT, REPORT_ORDER_LIST } = require('../utils/dictionary');
-const { REPORT_LIST } = require('../utils/events');
+const { DICT } = require('../utils/dictionary');
+const { REPORT_LIST, updateReport } = require('../utils/events');
+const DAILY_REPORT_PATH = './data/dailyReport.json';
 
 const CHAT_ID = process.env.GROUP_ID;
 
 //сработает, когда запустим сценарий reportScene
 
 reportScene.enter(async (ctx, next) => {
-  console.log('Отчёт. ШАГ 1.начало сценария');
+  // console.log('Отчёт. ШАГ 1.начало сценария');
 
   await ctx.editMessageText('Укажи должность', {
     parse_mode: 'HTML',
@@ -38,7 +39,7 @@ reportScene.enter(async (ctx, next) => {
 
 // выбираем Локацию
 reportScene.action(/profession_(.*)/, (ctx) => {
-  console.log('Отчёт. ШАГ 2.выбор должности');
+  // console.log('Отчёт. ШАГ 2.выбор должности');
   const prof = ctx.match[1];
   ctx.session.profession = prof;
   const setLocation = prof === 'kassir' ? setKassaLocation : setPhotoLocation;
@@ -51,7 +52,7 @@ reportScene.action(/profession_(.*)/, (ctx) => {
 
 // проверяем анкету
 reportScene.action(/loc_(.*)/, (ctx) => {
-  console.log(`ШАГ 3. выбор локации`);
+  // console.log(`ШАГ 3. выбор локации`);
   const location = ctx.match[1];
   ctx.session.location = location;
   ctx.editMessageText(
@@ -204,12 +205,17 @@ reportScene.action('report_ok', async (ctx) => {
     }
     const report_data = {
       id: ctx.session.id,
-      second_name: ctx.session.local_name.second_name,
+      local_name: ctx.session.local_name,
       profession: ctx.session.profession,
       location: ctx.session.location,
     };
 
-    REPORT_LIST.push({ ...report_data });
+    await updateReport({ ...report_data });
+    console.log(
+      `${report_data.location}:${
+        ctx.session.local_name.second_name
+      } ${ctx.session.local_name.first_name.slice(0, 1)}. отправил отчет `
+    );
     await ctx.reply('✅Спасибо за отчёт');
   } catch (error) {
     console.log(error);

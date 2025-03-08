@@ -1,30 +1,36 @@
 const fs = require('fs').promises;
+
 const { REPORT_ORDER_LIST, DICT } = require('./dictionary');
-let REPORT_LIST = [];
+
+const DAILY_REPORT_PATH = './data/dailyReport.json';
+
 async function dailyClearReportList() {
+  checkFileExist(DAILY_REPORT_PATH);
   const DAY_LENGTH = 24 * 60 * 60 * 1000;
   const clearTime = createEnvTime('CLEAR_REPORT_TIME');
   const nowTS = new Date().getTime();
   const timeout = clearTime - nowTS;
 
   const delay = timeout > 0 ? timeout : DAY_LENGTH + timeout;
-  setTimeout(function clearReportList() {
-    REPORT_LIST = [];
+  setTimeout(async function clearReportList() {
+    await initReport();
+    console.log('почистил');
     setTimeout(clearReportList, DAY_LENGTH);
   }, delay);
 }
 
-function createReportBotMessage() {
+async function createReportBotMessage() {
   let date = getCurrentDate() + '\n';
   let report = [];
-  REPORT_ORDER_LIST.forEach((item) => {
-    report.push(createProfessionList(item));
-  });
+  const REPORT_LIST = await readReport();
 
-  return date.concat(report.join('\n'));
+  REPORT_ORDER_LIST.forEach((item) => {
+    report.push(createProfessionList(item, REPORT_LIST));
+  });
+  const result = date.concat(report.join('\n'));
+  console.log('отправляею вечерний отчет');
+  return result;
 }
-// напоминание
-// sendNotification();
 
 async function everyDayReport(bot) {
   const nowTS = new Date().getTime();
@@ -37,7 +43,7 @@ async function everyDayReport(bot) {
   setTimeout(async function everyDaySendReport() {
     await bot.telegram.sendMessage(
       process.env.GROUP_ID,
-      createReportBotMessage()
+      await createReportBotMessage()
     );
     setTimeout(everyDaySendReport, DAY_LENGTH);
   }, delay);
@@ -50,23 +56,29 @@ function createEnvTime(env) {
   time.setHours(...reportTime.split(':'));
   return time;
 }
-function createProfessionList(obj) {
+function createProfessionList(obj, report_list) {
   let subReport = new Map();
   obj.location_order.forEach((element) => {
     //VELICAN
-    const locationUsers = REPORT_LIST.filter(
-      (item) => item.location === element
-    ).map((el) => el.second_name);
-    subReport.set(element, locationUsers);
+    const locationUsers = report_list
+      .filter((item) => item.location === element)
+      .map(
+        (el) =>
+          `${el.local_name.second_name} ${el.local_name.first_name.slice(
+            0,
+            1
+          )}.`
+      );
+    subReport.set(element, new Set(locationUsers));
   });
-  //   console.log(subReport);
+  // console.log(subReport);
   const message = [];
   message.push(obj.prefix + DICT[obj.profession] + 'ы\n');
 
   subReport.forEach((userList, location) => {
-    const status = userList.length !== 0 ? '✅' : '➖';
+    const status = Array.from(userList).length !== 0 ? '✅' : '➖';
     const row = `${status}${DICT[location]} ${
-      status == '✅' ? userList.join(',') : ''
+      status == '✅' ? Array.from(userList).join(',') : ''
     }\n`;
     message.push(row);
   });
@@ -79,5 +91,41 @@ function getCurrentDate() {
   let day = String(today.getDate()).padStart(2, '0');
   return ''.concat(day, '.', month);
 }
+async function initReport(path = DAILY_REPORT_PATH) {
+  try {
+    await fs.writeFile(path, JSON.stringify(new Array()));
+    console.log('вечерний отчёт создан заново');
+  } catch (err) {
+    console.log('init report err', err);
+  }
+}
+async function updateReport(data, path = DAILY_REPORT_PATH) {
+  const input = await fs.readFile(path, 'utf-8');
+  const report = JSON.parse(input);
+  report.push(data);
+  try {
+    fs.writeFile(path, JSON.stringify(report));
+  } catch (error) {
+    console.log('write report err', err);
+  }
+}
+async function readReport(path = DAILY_REPORT_PATH) {
+  const data = await fs.readFile(path, 'utf-8');
+  return JSON.parse(data);
+}
+async function checkFileExist(path) {
+  try {
+    const stats = await fs.stat(path);
+    if (stats.isFile()) return console.log('report file exist');
+  } catch (err) {
+    console.log(err.errno, 'файла отчета нет, создаю');
+    await initReport(path);
+  }
+}
 
-module.exports = { REPORT_LIST, everyDayReport, dailyClearReportList };
+module.exports = {
+  everyDayReport,
+  dailyClearReportList,
+  updateReport,
+  createReportBotMessage,
+};

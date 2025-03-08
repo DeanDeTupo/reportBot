@@ -11,7 +11,11 @@ const {
   refreshData,
   checkUserData,
 } = require('./utils/utils');
-const { everyDayReport, dailyClearReportList } = require('./utils/events');
+const {
+  everyDayReport,
+  dailyClearReportList,
+  createReportBotMessage,
+} = require('./utils/events');
 
 //создаём экземплр бота
 const bot = new Telegraf(process.env.API_KEY_BOT);
@@ -53,6 +57,10 @@ bot.action('notify', async (ctx) => {
 
   ctx.scene.enter('notify');
 });
+bot.hears('dailyReport', async (ctx, next) => {
+  if (ctx.update.message.chat.id < 0) return;
+  await ctx.reply(await createReportBotMessage(), { parse_mode: 'Markdown' });
+});
 
 bot.catch((err, ctx) => {
   console.log('Error', err);
@@ -74,8 +82,8 @@ async function sendNotification() {
     if (usersToNotify.length === 0) {
       return clearInterval(notifyInterval);
     }
-    console.log('отправялем');
     const user = usersToNotify.pop();
+    console.log('отправялем напоминание для ', user.local_name);
     bot.telegram.sendMessage(
       user.id,
       `${user.local_name.first_name}, пора написать отчёт\nЖми /start`,
