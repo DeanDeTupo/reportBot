@@ -5,17 +5,10 @@ const { reportScene } = require('./scenes/ReportScene');
 const { greetingScene } = require('./scenes/greetingScene');
 const { start, backMenu } = require('./commands');
 const { notifyScene } = require('./scenes/notifyScene');
-const {
-  getNotificationList,
-  checkUser,
-  refreshData,
-  checkUserData,
-} = require('./utils/utils');
-const {
-  everyDayReport,
-  dailyClearReportList,
-  createReportBotMessage,
-} = require('./utils/events');
+const { checkUserData } = require('./utils/utils');
+const { everyDayReport, createReportBotMessage } = require('./utils/events');
+const { startUsersNotification } = require('./utils/userNotification');
+const { updateDailyReport } = require('./utils/buttons');
 
 //создаём экземплр бота
 const bot = new Telegraf(process.env.API_KEY_BOT);
@@ -28,7 +21,14 @@ const stage = new Stage([reportScene, greetingScene, notifyScene]);
 
 bot.use(session());
 bot.use(stage.middleware());
-bot.use((ctx, next) => {
+bot.use(async (ctx, next) => {
+  if (!ctx.session.local_name) {
+    const isUser = await checkUserData(ctx);
+    console.log('session', isUser);
+    // console.log(ctx.session);
+    if (!isUser) return ctx.scene.enter('greeting');
+  }
+
   return next();
 });
 
@@ -57,73 +57,49 @@ bot.action('notify', async (ctx) => {
 
   ctx.scene.enter('notify');
 });
+
+// -----dailyReport
 bot.hears('dailyReport', async (ctx, next) => {
   if (ctx.update.message.chat.id < 0) return;
   await ctx.reply(await createReportBotMessage(), { parse_mode: 'Markdown' });
 });
 
+bot.action('dailyReport', async (ctx) => {
+  await ctx.editMessageText(await createReportBotMessage(), {
+    parse_mode: 'Markdown',
+    reply_markup: updateDailyReport,
+  });
+});
+
+bot.action('updateDailyReport', async (ctx) => {
+  // console.log(ctx.update.callback_query);
+  // если ничего не изменилось
+  const prevReport = ctx.update.callback_query.message.text;
+  const currentReport = await createReportBotMessage();
+  if (prevReport == currentReport.slice(0, currentReport.length - 2)) {
+    // console.log('то же самое');
+    return;
+  }
+
+  await ctx.editMessageText(await createReportBotMessage(), {
+    parse_mode: 'Markdown',
+    reply_markup: updateDailyReport,
+  });
+});
+
+bot.action('mainMenu', async (ctx) => {
+  await backMenu(ctx);
+});
 bot.catch((err, ctx) => {
   console.log('Error', err);
   bot.launch();
 });
 
+bot.on('left_chat_member', (ctx, next) => {
+  console.log('Покинул чат', ctx.update.message.left_chat_member.id);
+  //удалить ему свойство isAdmin
+});
 // напоминание
 everyDayReport(bot);
-dailyClearReportList();
-
-async function sendNotification() {
-  // взять список людей подписанных на уведомления
-  const usersToNotify = await getNotificationList();
-  // console.log(usersToNotify);
-
-  // just to delay
-  const notifyInterval = setInterval(() => {
-    // если список кончился
-    if (usersToNotify.length === 0) {
-      return clearInterval(notifyInterval);
-    }
-    const user = usersToNotify.pop();
-    console.log('отправялем напоминание для ', user.local_name);
-    bot.telegram.sendMessage(
-      user.id,
-      `${user.local_name.first_name}, пора написать отчёт\nЖми /start`,
-      { parse_mode: 'Markdown' }
-    );
-  }, 1000);
-  // setInterval(async () => {
-  // }, 10000);
-  // setTimeout(() => {
-  // }, 5000);
-}
-// sendNotification();
-function createNotificationTime() {
-  let input = process.env.TIME;
-  const time = new Date();
-
-  time.setHours(...input.split(':'));
-
-  return time;
-}
-const purposeTS = createNotificationTime();
-
-// выполним функцию в определенное время дня в 04:00
-// get current time
-
-let time = process.env.TIME;
-const nowTS = new Date().getTime();
-// get timestamp  of purpose time today
-const timeout = purposeTS - nowTS;
-const DAY_LENGTH = 24 * 60 * 60 * 1000;
-const delay = timeout > 0 ? timeout : DAY_LENGTH + timeout;
-// console.log(delay);
-setTimeout(async function everyDayNotify() {
-  await sendNotification();
-  setTimeout(everyDayNotify, DAY_LENGTH);
-}, delay);
-
-// команда запуска бота с опциями
+startUsersNotification(bot);
 bot.launch(options);
-// bot.startPolling();
-// bot.on('message', async (ctx, next) => {
-//   console.log(ctx.update);
-// });

@@ -28,11 +28,13 @@ async function createReportBotMessage() {
     report.push(createProfessionList(item, REPORT_LIST));
   });
   const result = date.concat(report.join('\n'));
-  console.log('отправляею вечерний отчет');
+  // console.log('отправляею вечерний отчет', result.length);
   return result;
 }
 
 async function everyDayReport(bot) {
+  // запуск очисти отчета
+  dailyClearReportList();
   const nowTS = new Date().getTime();
   // get timestamp  of purpose time today
   const purposeTS = createEnvTime('REPORT_TIME');

@@ -6,6 +6,16 @@ const mainMenu = {
     [{ text: 'Напоминания', callback_data: 'notify' }],
   ],
 };
+const adminMainMenu = {
+  inline_keyboard: [
+    [{ text: '📋Сводка по отчетам', callback_data: 'dailyReport' }],
+    [
+      { text: 'Написать отчёт', callback_data: 'report' },
+      { text: 'Напоминания', callback_data: 'notify' },
+    ],
+    // [{ text: 'Напоминания', callback_data: 'notify' }],
+  ],
+};
 const notify = (status) => {
   const state = status || false;
   const checker = '✔️';
@@ -115,6 +125,12 @@ const confirmReport = {
     [{ text: 'Нет🔙', callback_data: 'to_location' }],
   ],
 };
+const updateDailyReport = {
+  inline_keyboard: [
+    [{ text: 'Обновить', callback_data: 'updateDailyReport' }],
+    [{ text: 'Назад🔙', callback_data: 'mainMenu' }],
+  ],
+};
 module.exports = {
   mainMenu,
   setProfession,
@@ -125,4 +141,6 @@ module.exports = {
   greeting,
   applyGreeting,
   notify,
+  adminMainMenu,
+  updateDailyReport,
 };

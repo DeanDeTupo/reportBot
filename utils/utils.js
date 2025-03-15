@@ -1,37 +1,33 @@
+const { Telegram } = require('telegraf');
+
 //функция для записи в json
 const fs = require('fs').promises;
 
 const DATA_PATH = './data/personalData.json';
 
 async function checkUser(userObj) {
-  let response;
   const data = await fs.readFile(DATA_PATH, { encoding: 'utf-8' });
 
   console.log('запрос в БД');
   const json = JSON.parse(data);
 
-  const userData = isInData(json, userObj);
+  const userData = json.users.find((elem) => elem.id == userObj.id);
   // данные уже есть, пользователь зарегистрирован
-  if (!!userData) {
-    response = {
-      status: 'in',
-      data: userData,
-    };
-    return response;
+  if (!userData) {
+    return null;
   }
-  response = {
-    status: 'not',
-    data: null,
-  };
-  return response;
+  return userData;
 }
 
 async function registerUser(userObj) {
   let response;
-  const data = await fs.readFile(DATA_PATH, 'utf-8', (err, data) => {
+  try {
+    const data = await fs.readFile(DATA_PATH, 'utf-8');
+  } catch (err) {
     // что делать при ошибке чтения
-    if (err) return console.log(err);
-  });
+    console.log(err);
+  }
+
   const json = JSON.parse(data);
   json.users.push(userObj);
   const finalJson = JSON.stringify(json);
@@ -69,33 +65,63 @@ async function getNotificationList() {
   return users.filter((user) => user.enableNotify === true);
 }
 
-function isInData(data, value) {
-  return data.users.find((elem) => elem.id == value.id);
-}
-
-// function date() {
-//   let now = new Date();
-//   const offset = now.getTimezoneOffset() / 60;
-//   let localTime = now.getTime() - offset * 3600 * 1000;
-//   console.log(now);
-//   console.log(now.getTimezoneOffset() / 60);
-//   console.log(new Date(localTime));
-//   // console.log(now.getTimezoneOffset() / 60);
-// }
-// date();
-
 async function checkUserData(ctx) {
-  const request = await checkUser(ctx.update.callback_query.from);
-  const userData = request.data;
-  if (!userData) return false;
-  refreshData(userData, ctx);
+  const userId =
+    (!!ctx.update.message ? ctx.update.message.from : undefined) ||
+    ctx.update.callback_query.from;
+  const request = await checkUser(userId);
+  // const userData = request.data;
+  if (!request) return false;
+  await refreshData(request, ctx);
   return true;
 }
 
-function refreshData(DBDate, ctx) {
+async function refreshData(DBDate, ctx) {
+  // console.log(DBDate);
+  let adminStatus = false;
+  try {
+    adminStatus = await isAdmin(DBDate.id, process.env.GROUP_ID, ctx);
+    DBDate.isAdmin = adminStatus;
+    await setUserProperty(DBDate.id, 'isAdmin', adminStatus);
+  } catch (err) {
+    console.log('Pizda', err);
+  }
+  if (!DBDate.hasOwnProperty('isAdmin')) {
+  }
   ctx.session.local_name = DBDate.local_name;
   ctx.session.id = DBDate.id;
   ctx.session.enableNotify = DBDate.enableNotify || false;
+  ctx.session.isAdmin = DBDate.isAdmin;
+}
+
+async function isAdmin(userId, chatId, ctx) {
+  const AdminStatuses = ['creator', 'administrator', 'member'];
+  try {
+    let chatMember = await ctx.telegram.getChatMember(chatId, userId);
+    console.log('11111', chatMember);
+    return AdminStatuses.indexOf(chatMember.status) == -1 ? false : true;
+  } catch (err) {
+    console.log('pizdaaa', err);
+    return false;
+  }
+}
+
+async function setUserProperty(userId, prop, value) {
+  try {
+    const stringData = await fs.readFile(DATA_PATH, { encoding: 'utf-8' });
+    const data = JSON.parse(stringData);
+    data.users.find((user) => {
+      if (user.id == userId) {
+        user[prop] = value;
+        return true;
+      }
+    });
+    await fs.writeFile(DATA_PATH, JSON.stringify(data));
+    return true;
+  } catch (err) {
+    console.log('Pizda', err);
+    return false;
+  }
 }
 
 module.exports = {
@@ -105,4 +131,5 @@ module.exports = {
   getNotificationList,
   refreshData,
   checkUserData,
+  isAdmin,
 };

@@ -1,54 +1,60 @@
 // команды для бота
 
-const { mainMenu, greeting } = require('./utils/buttons');
-const { checkUser, refreshData } = require('./utils/utils');
+const { mainMenu, greeting, adminMainMenu } = require('./utils/buttons');
+const { checkUser, refreshData, isAdmin } = require('./utils/utils');
 
 const start = async (ctx) => {
   //убираем обработку команд для групповых чатов
 
   if (ctx.update.message.chat.id < 0) return;
-  //сначала знакомство или проверка на знакомство
-  // запустить функцию проверки на знакомство
-  // если есть в базе, то продолжить и передать данные дальше'
-  // console.log(ctx.update.message);
-  const userId =
-    (!!ctx.update.message ? ctx.update.message.from : undefined) ||
-    ctx.update.callback_query.from;
-  const checkData = await checkUser(userId); //передаём ctx команды /start
-  // console.log(userId);
-  // console.log(checkData);
-  // если пользователь есть
-  // console.log(checkData.status);
-  if (!!checkData.data) {
-    refreshData(checkData.data, ctx);
-    // ctx.session.local_name = checkData.data.local_name;
-    // ctx.session.id = checkData.data.id;
-    // ctx.session.enableNotify = checkData.data.enableNotify || false;
-    console.log(ctx.session);
-    ctx.reply(`🤖 Я принимаю отчёты`, { reply_markup: mainMenu });
+
+  // const userId =
+  //   (!!ctx.update.message ? ctx.update.message.from : undefined) ||
+  //   ctx.update.callback_query.from;
+  // const checkData = await checkUser(userId); //передаём ctx команды /start
+  // if (!checkData) {
+  //   return await ctx.reply(`Давай познакомимся`, {
+  //     parse_mode: 'Markdown',
+  //     reply_markup: greeting,
+  //   });
+  // }
+  // await refreshData(checkData, ctx);
+  if (!ctx.session.isAdmin) {
+    return ctx.reply(`🤖 Я принимаю отчёты`, { reply_markup: mainMenu });
   }
-  if (!checkData.data) {
-    ctx.reply(`Давай познакомимся`, {
-      parse_mode: 'Markdown',
-      reply_markup: greeting,
-    });
-  }
+  return ctx.reply(`🤖 Приветствую, ${ctx.session.local_name.first_name}`, {
+    reply_markup: adminMainMenu,
+  });
 };
 
 const backMenu = (ctx) => {
   // ctx.editMessageText(`🤖 Я принимаю отчёты`, {
-  ctx.editMessageText(`🤖 Я принимаю отчёты!!!`, {
-    disable_web_page_preview: true,
-    parse_mode: 'HTML',
-    reply_markup: mainMenu,
-  });
+  if (!ctx.session.isAdmin) {
+    return ctx.editMessageText(`🤖 Я принимаю отчёты!!!`, {
+      disable_web_page_preview: true,
+      parse_mode: 'HTML',
+      reply_markup: mainMenu,
+    });
+  }
+  return ctx.editMessageText(
+    `🤖 Приветствую, ${ctx.session.local_name.first_name}`,
+    {
+      parse_mode: 'HTML',
+      reply_markup: adminMainMenu,
+    }
+  );
 };
 const toStart = (ctx) => {
-  // ctx.editMessageText(`🤖 Я принимаю отчёты`, {
-  ctx.reply(`🤖 Я принимаю отчёты!!!`, {
-    disable_web_page_preview: true,
+  if (!ctx.session.isAdmin) {
+    return ctx.reply(`🤖 Я принимаю отчёты!!!`, {
+      disable_web_page_preview: true,
+      parse_mode: 'HTML',
+      reply_markup: mainMenu,
+    });
+  }
+  return ctx.reply(`🤖 Приветствую, ${ctx.session.local_name.first_name}`, {
     parse_mode: 'HTML',
-    reply_markup: mainMenu,
+    reply_markup: adminMainMenu,
   });
 };
 
