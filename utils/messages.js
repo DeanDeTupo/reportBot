@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { DICT } = require('./dictionary');
 
 const dict = { '<': '&lt;', '>': '&gt;', '&': '&amp;' };
@@ -20,9 +21,11 @@ const textLengthWarning = (text) => {
 };
 
 function notifyStatusMessage(status) {
+  const NOTE_TIME = process.env.TIME.slice(0, 5);
+  console.log(NOTE_TIME);
   return `Напоминания *${
     status ? 'ВКЛЮЧЕНЫ' : 'ВЫКЛЮЧЕНЫ'
-  }*\nБуду напоминать тебе про отчет в 20:00\n\nИзменения вступят в силу после нажатия кнопки _сохранить и выйти_`;
+  }*\nБуду напоминать тебе про отчет в *${NOTE_TIME}*\n\nИзменения вступят в силу после нажатия кнопки _сохранить и выйти_`;
 }
 
 module.exports = { createReport, notifyStatusMessage, textLengthWarning };

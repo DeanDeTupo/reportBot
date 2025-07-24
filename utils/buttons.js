@@ -65,7 +65,7 @@ const setKassaLocation = {
       { text: 'Р33️⃣', callback_data: 'loc_R3' },
     ],
     [
-      { text: 'Зу-Зу🐰', callback_data: 'loc_ZUZU' },
+      // { text: 'Зу-Зу🐰', callback_data: 'loc_ZUZU' },
       { text: 'Р44️⃣', callback_data: 'loc_R4' },
     ],
     [
@@ -78,7 +78,7 @@ const setKassaLocation = {
       { text: 'Н5🙃', callback_data: 'loc_N5' },
     ],
     [
-      { text: 'Фрейд🍡', callback_data: 'loc_FREUD' },
+      // { text: 'Фрейд🍡', callback_data: 'loc_FREUD' },
       { text: 'Кафе🥐', callback_data: 'loc_CAFE' },
     ],
 
@@ -98,7 +98,8 @@ const setPhotoLocation = {
     ],
     [
       { text: 'Космос🚀', callback_data: 'loc_KOSMOS' },
-      { text: 'Фрейд🍓', callback_data: 'loc_FREUD' },
+      // { text: 'Фрейд🍓', callback_data: 'loc_FREUD' },
+      { text: 'СНЫ🌃', callback_data: 'loc_DREAMS' },
     ],
     [
       { text: 'ДВД🙃', callback_data: 'loc_DVD' },
