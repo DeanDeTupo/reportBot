@@ -23,7 +23,7 @@ const DICTIONARY = {
   DVD: 'ДВД',
   MOVIE: 'Муви',
   BMF: 'БМФ',
-  PHOTO_HELP: 'Помощь',
+  PHOTOHELP: 'Помощь',
 };
 
 const REPORT_LIST = [
@@ -58,7 +58,7 @@ const REPORT_LIST = [
       'DVD',
       'MOVIE',
       'BMF',
-      'PHOTO_HELP',
+      'PHOTOHELP',
     ],
     prefix: '📷',
   },
