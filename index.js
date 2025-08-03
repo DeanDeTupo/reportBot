@@ -4,12 +4,14 @@ const { Telegraf, Markup, Stage, session } = require('telegraf');
 const { reportScene } = require('./scenes/ReportScene');
 const { greetingScene } = require('./scenes/greetingScene');
 // const { anonimusScene } = require('./scenes/anonimusScene');
+// const { anonimusScene } = require('./scenes/anonimusScene');
 const { start, backMenu } = require('./commands');
 const { notifyScene } = require('./scenes/notifyScene');
 const { checkUserData } = require('./utils/utils');
 const { everyDayReport, createReportBotMessage } = require('./utils/events');
 const { startUsersNotification } = require('./utils/userNotification');
 const { updateDailyReport } = require('./utils/buttons');
+// const { messageSenderService } = require('./scenes/anonimusScene');
 // const { messageSenderService } = require('./scenes/anonimusScene');
 
 //создаём экземплр бота
@@ -31,6 +33,7 @@ bot.use(stage.middleware());
 bot.use(async (ctx, next) => {
   if (!ctx.session.local_name) {
     const isUser = await checkUserData(ctx);
+    // console.log('session', isUser);
     // console.log('session', isUser);
     // console.log(ctx.session);
     if (!isUser) return ctx.scene.enter('greeting');
@@ -60,7 +63,7 @@ bot.action('notify', async (ctx) => {
     if (!isUser) return ctx.scene.enter('greeting');
   }
 
-  ctx.scene.enter('anon');
+  ctx.scene.enter('notify');
 });
 
 // -----dailyReport
@@ -68,6 +71,17 @@ bot.hears('dailyReport', async (ctx, next) => {
   if (ctx.update.message.chat.id < 0) return;
   await ctx.reply(await createReportBotMessage(), { parse_mode: 'Markdown' });
 });
+
+// ----------------anonimus
+// bot.hears('Anon', async (ctx, next) => {
+//   if (ctx.update.message.chat.id < 0) return;
+//   if (!ctx.session.id) {
+//     const isUser = await checkUserData(ctx);
+//     if (!isUser) return ctx.scene.enter('greeting');
+//   }
+
+//   ctx.scene.enter('anon');
+// });
 
 // ----------------anonimus
 // bot.hears('Anon', async (ctx, next) => {
@@ -118,5 +132,6 @@ bot.on('left_chat_member', (ctx, next) => {
 // напоминание
 everyDayReport(bot);
 startUsersNotification(bot);
+// messageSenderService(bot);
 // messageSenderService(bot);
 bot.launch(options);
