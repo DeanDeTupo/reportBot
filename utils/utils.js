@@ -20,24 +20,22 @@ async function checkUser(userObj) {
 }
 
 async function registerUser(userObj) {
-  let response;
+  let userData;
   try {
     const data = await fs.readFile(DATA_PATH, 'utf-8');
+    const json = JSON.parse(data);
+    json.users.push(userObj);
+    userData = JSON.stringify(json);
   } catch (err) {
     // что делать при ошибке чтения
-    console.log(err);
+    console.log('ошибка чтения');
   }
-
-  const json = JSON.parse(data);
-  json.users.push(userObj);
-  const finalJson = JSON.stringify(json);
-  await fs.writeFile(DATA_PATH, finalJson, (err) => {
-    if (err) console.log(err);
-    // else
-    //   console.log(
-    //     `Данные ${userObj.local_name.first_name} ${userObj.local_name.second_name} записаны`
-    //   );
-  });
+  try {
+    await fs.writeFile(DATA_PATH, userData);
+  } catch (err) {
+    // что делать при ошибке записи
+    console.log('ошибка записи');
+  }
 }
 
 async function setUserNotification(id, status) {
@@ -98,7 +96,7 @@ async function isAdmin(userId, chatId, ctx) {
   const AdminStatuses = ['creator', 'administrator', 'member'];
   try {
     let chatMember = await ctx.telegram.getChatMember(chatId, userId);
-    console.log('11111', chatMember);
+    // console.log('11111', chatMember);
     return AdminStatuses.indexOf(chatMember.status) == -1 ? false : true;
   } catch (err) {
     console.log('pizdaaa', err);
