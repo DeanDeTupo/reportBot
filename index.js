@@ -55,8 +55,6 @@ bot.action('greeting', (ctx) => {
   ctx.scene.enter('greeting');
 });
 bot.action('notify', async (ctx) => {
-  // убрать
-
   if (!ctx.session.id) {
     const isUser = await checkUserData(ctx);
     if (!isUser) return ctx.scene.enter('greeting');
