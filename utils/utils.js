@@ -3,10 +3,12 @@ const { Telegram } = require('telegraf');
 //функция для записи в json
 const fs = require('fs').promises;
 
-const DATA_PATH = './data/personalData.json';
+const PERSONAL_DATA_PATH = './data/personalData.json';
+const NICKNAMES_DATA_PATH = './data/nicknamesData.json';
+const NICKNAMES_SOURCE_PATH = './data/nicknameSource.json';
 
 async function checkUser(userObj) {
-  const data = await fs.readFile(DATA_PATH, { encoding: 'utf-8' });
+  const data = await fs.readFile(PERSONAL_DATA_PATH, { encoding: 'utf-8' });
 
   console.log('запрос в БД');
   const json = JSON.parse(data);
@@ -22,7 +24,7 @@ async function checkUser(userObj) {
 async function registerUser(userObj) {
   let response;
   try {
-    const data = await fs.readFile(DATA_PATH, 'utf-8');
+    const data = await fs.readFile(PERSONAL_DATA_PATH, 'utf-8');
   } catch (err) {
     // что делать при ошибке чтения
     console.log(err);
@@ -31,7 +33,7 @@ async function registerUser(userObj) {
   const json = JSON.parse(data);
   json.users.push(userObj);
   const finalJson = JSON.stringify(json);
-  await fs.writeFile(DATA_PATH, finalJson, (err) => {
+  await fs.writeFile(PERSONAL_DATA_PATH, finalJson, (err) => {
     if (err) console.log(err);
     // else
     //   console.log(
@@ -41,7 +43,7 @@ async function registerUser(userObj) {
 }
 
 async function setUserNotification(id, status) {
-  const data = await fs.readFile(DATA_PATH, 'utf-8', (err, data) => {
+  const data = await fs.readFile(PERSONAL_DATA_PATH, 'utf-8', (err, data) => {
     // что делать при ошибке чтения
     if (err) return console.log(err);
   });
@@ -52,15 +54,19 @@ async function setUserNotification(id, status) {
   }
   user.enableNotify = status;
   const finalJson = JSON.stringify(json);
-  await fs.writeFile(DATA_PATH, finalJson, (err) => {
+  await fs.writeFile(PERSONAL_DATA_PATH, finalJson, (err) => {
     if (err) console.log(err);
   });
 }
 
 async function getNotificationList() {
-  const rawdata = await fs.readFile(DATA_PATH, 'utf-8', (err, data) => {
-    if (err) console.log(err);
-  });
+  const rawdata = await fs.readFile(
+    PERSONAL_DATA_PATH,
+    'utf-8',
+    (err, data) => {
+      if (err) console.log(err);
+    }
+  );
   const users = JSON.parse(rawdata).users;
   return users.filter((user) => user.enableNotify === true);
 }
@@ -98,7 +104,8 @@ async function isAdmin(userId, chatId, ctx) {
   const AdminStatuses = ['creator', 'administrator', 'member'];
   try {
     let chatMember = await ctx.telegram.getChatMember(chatId, userId);
-    console.log('11111', chatMember);
+    // console.log('11111', chatMember);
+
     return AdminStatuses.indexOf(chatMember.status) == -1 ? false : true;
   } catch (err) {
     console.log('pizdaaa', err);
@@ -108,7 +115,9 @@ async function isAdmin(userId, chatId, ctx) {
 
 async function setUserProperty(userId, prop, value) {
   try {
-    const stringData = await fs.readFile(DATA_PATH, { encoding: 'utf-8' });
+    const stringData = await fs.readFile(PERSONAL_DATA_PATH, {
+      encoding: 'utf-8',
+    });
     const data = JSON.parse(stringData);
     data.users.find((user) => {
       if (user.id == userId) {
@@ -116,12 +125,105 @@ async function setUserProperty(userId, prop, value) {
         return true;
       }
     });
-    await fs.writeFile(DATA_PATH, JSON.stringify(data));
+    await fs.writeFile(PERSONAL_DATA_PATH, JSON.stringify(data));
     return true;
   } catch (err) {
     console.log('Pizda', err);
     return false;
   }
+}
+
+async function getUserList() {
+  const file = await fs.readFile(PERSONAL_DATA_PATH, { encoding: 'utf-8' });
+  const data = JSON.parse(file);
+  return data.users;
+}
+
+async function getUsersForAnonimMessage() {
+  const userList = await getUserList();
+  const allowedUsers = userList
+    // .filter((user) => {
+    //   return user.isAdmin == false;
+    // })
+    .sort((a, b) => {
+      if (a.local_name.second_name < b.local_name.second_name) return -1;
+      else return 1;
+    });
+  return allowedUsers;
+}
+
+async function getUserById(userID) {
+  const usersList = await getUserList();
+  const targetUser = usersList.find((elem) => {
+    return elem.id == userID;
+  });
+
+  return targetUser;
+}
+
+async function initNicknames() {
+  try {
+    await fs.readFile(NICKNAMES_DATA_PATH);
+    console.log('nickNames exist');
+  } catch {
+    const data = JSON.stringify(new Array());
+    try {
+      await fs.writeFile(NICKNAMES_DATA_PATH, data, 'utf-8');
+      console.log('nickNames created');
+    } catch {
+      console.log('Error! nickNames does not exists, cant create');
+    }
+  }
+}
+
+async function readNicknames() {
+  const data = await fs.readFile(NICKNAMES_DATA_PATH);
+  return JSON.parse(data);
+}
+
+async function generateNickname() {
+  try {
+    const data = await fs.readFile(NICKNAMES_SOURCE_PATH, 'utf-8');
+    source = JSON.parse(data);
+    //случайно выбрать элемент из списка
+    return (
+      selectRandomArrayElement(source.first) +
+      ' ' +
+      selectRandomArrayElement(source.second)
+    );
+  } catch (e) {
+    console.log('cant read nicknameSource data');
+    return false;
+  }
+}
+
+function selectRandomArrayElement(array) {
+  const randomIndex = Math.floor(Math.random() * array.length);
+  return array[randomIndex];
+}
+
+async function getNickname(id) {
+  const anonUsers = await readNicknames();
+  const user = anonUsers.find((user) => user.id === id);
+  if (!user) {
+    const nickname = await registerNickname(id, anonUsers);
+    return nickname;
+  }
+  return user.nickname;
+}
+async function registerNickname(id, list) {
+  let nickname = await createNickname(id, list);
+  list.push({ id, nickname });
+  await fs.writeFile(NICKNAMES_DATA_PATH, JSON.stringify(list));
+  return nickname;
+}
+
+// уязвимость с количеством имён
+// при достижении максимума - бесконечная рекурсия
+async function createNickname(id, list) {
+  let nickname = await generateNickname();
+  if (!list.find((user) => user.nickname == nickname)) return nickname;
+  else return createNickname(id, list);
 }
 
 module.exports = {
@@ -132,4 +234,11 @@ module.exports = {
   refreshData,
   checkUserData,
   isAdmin,
+  getUserList,
+  getUsersForAnonimMessage,
+  getUserById,
+  initNicknames,
+  generateNickname,
+  getNickname,
+  createNickname,
 };

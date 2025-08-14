@@ -3,12 +3,18 @@ const { Telegraf, Markup, Stage, session } = require('telegraf');
 
 const { reportScene } = require('./scenes/ReportScene');
 const { greetingScene } = require('./scenes/greetingScene');
+const { anonimusScene } = require('./scenes/anonimusScene');
 const { start, backMenu } = require('./commands');
 const { notifyScene } = require('./scenes/notifyScene');
-const { checkUserData } = require('./utils/utils');
+const {
+  checkUserData,
+  initNicknames,
+  generateNickname,
+} = require('./utils/utils');
 const { everyDayReport, createReportBotMessage } = require('./utils/events');
 const { startUsersNotification } = require('./utils/userNotification');
 const { updateDailyReport } = require('./utils/buttons');
+const { messageSenderService } = require('./scenes/anonimusScene');
 
 //создаём экземплр бота
 const bot = new Telegraf(process.env.API_KEY_BOT);
@@ -17,7 +23,12 @@ const bot = new Telegraf(process.env.API_KEY_BOT);
 const options = { dropPendingUpdates: true };
 
 //подгружаем сценарии
-const stage = new Stage([reportScene, greetingScene, notifyScene]);
+const stage = new Stage([
+  reportScene,
+  greetingScene,
+  notifyScene,
+  anonimusScene,
+]);
 
 bot.use(session());
 bot.use(stage.middleware());
@@ -64,6 +75,17 @@ bot.hears('dailyReport', async (ctx, next) => {
   await ctx.reply(await createReportBotMessage(), { parse_mode: 'Markdown' });
 });
 
+// ----------------anonimus
+bot.hears('Anon', async (ctx, next) => {
+  if (ctx.update.message.chat.id < 0) return;
+  if (!ctx.session.id) {
+    const isUser = await checkUserData(ctx);
+    if (!isUser) return ctx.scene.enter('greeting');
+  }
+
+  ctx.scene.enter('anon');
+});
+
 bot.action('dailyReport', async (ctx) => {
   await ctx.editMessageText(await createReportBotMessage(), {
     parse_mode: 'Markdown',
@@ -102,4 +124,7 @@ bot.on('left_chat_member', (ctx, next) => {
 // напоминание
 everyDayReport(bot);
 startUsersNotification(bot);
+messageSenderService(bot);
+initNicknames();
+generateNickname();
 bot.launch(options);
