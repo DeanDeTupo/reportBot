@@ -29,11 +29,7 @@ anonimusScene.enter(async (ctx, next) => {
     ctx.reply(
       'Добро пожаловать в АНОНИМНЫЕ СООБЩЕНИЯ\n\nОтправь мне фамилию сотрудника',
       {
-        reply_markup: Markup.inlineKeyboard([
-          // [Markup.callbackButton('Выбрать сотрудника', 'choose_person')],
-          [Markup.callbackButton('Приватность', 'privacy')],
-          [Markup.callbackButton('Выход', 'exit')],
-        ]),
+        reply_markup: keyboard.start,
       }
     );
     next();
@@ -45,9 +41,9 @@ anonimusScene.enter(async (ctx, next) => {
 });
 
 anonimusScene.action('choose_person', async (ctx, next) => {
-  const userList = await getUsersForAnonimMessage();
+  // const userList = await getUsersForAnonimMessage();
   ctx.reply(
-    'найдено ' + userList.length + ' людей' + 'введите фамилию сотрудника'
+    'введите фамилию сотрудника, которому хотите написать АНОНИМНОЕ сообщение, которое он получит от бота'
   );
   // userList.forEach((user) => console.log(stringName(user.local_name)));
 });
@@ -82,11 +78,7 @@ anonimusScene.action('anon_start', async (ctx) => {
   ctx.session.step = 0;
 
   ctx.editMessageText('Отправь мне фамилию сотрудника', {
-    reply_markup: Markup.inlineKeyboard([
-      // [Markup.callbackButton('Выбрать сотрудника', 'choose_person')],
-      [Markup.callbackButton('Приватность', 'privacy')],
-      [Markup.callbackButton('Выход', 'exit')],
-    ]),
+    reply_markup: keyboard.start,
   });
 });
 
@@ -113,29 +105,40 @@ function makeUsersKeyboard(userlist) {
   ]);
 }
 
+// ищет в базе человека
+// проверяет на админа
 async function searchPersonHandler(ctx, userInput) {
   const userList = await getUsersForAnonimMessage();
-  const foundUsers = userList.filter((user) => {
-    return (
-      user.local_name.second_name
-        .toLowerCase()
-        .indexOf(userInput.toLowerCase()) > -1
-    );
-  });
+  let foundUsers;
+  // если Линейный сотрудник
+  if (!ctx.session.isAdmin) {
+    foundUsers = userList
+      .filter((user) => {
+        return (
+          user.local_name.second_name
+            .toLowerCase()
+            .indexOf(userInput.toLowerCase()) > -1
+        );
+      })
+      .filter((user) => user.isAdmin === false);
+    // если Админ
+  } else {
+    foundUsers = userList.filter((user) => {
+      return (
+        user.local_name.second_name
+          .toLowerCase()
+          .indexOf(userInput.toLowerCase()) > -1
+      );
+    });
+  }
   foundUsers.forEach((user) => console.log(user.local_name));
   if (!foundUsers.length) {
     ctx.reply('ничего не найдено, введи еще раз', {
-      reply_markup: Markup.inlineKeyboard([
-        [Markup.callbackButton('Назад', 'anon_start')],
-        [Markup.callbackButton('Выход', 'exit')],
-      ]),
+      reply_markup: keyboard.fail,
     });
   } else if (foundUsers.length > 5) {
     ctx.reply('введи фамилию конкретную', {
-      reply_markup: Markup.inlineKeyboard([
-        [Markup.callbackButton('Назад', 'anon_start')],
-        [Markup.callbackButton('Выход', 'exit')],
-      ]),
+      reply_markup: keyboard.fail,
     });
   } else {
     ctx.reply('кому напишем сообщение? ', {
@@ -165,11 +168,7 @@ async function messageToUserHandler(ctx, userInput) {
   // console.log(`Промис выполнен с результатом ${messageStatus}`);
   if (!messageStatus) {
     return await ctx.reply('Ошибка, ВВЕДИ другого человека, либо жми ВЫХОД', {
-      reply_markup: Markup.inlineKeyboard([
-        // [Markup.callbackButton('Выбрать сотрудника', 'choose_person')],
-        [Markup.callbackButton('Приватность', 'privacy')],
-        [Markup.callbackButton('Выход', 'exit')],
-      ]),
+      reply_markup: keyboard.start,
     });
   }
 
@@ -191,13 +190,21 @@ async function messageToUserHandler(ctx, userInput) {
   //
 
   ctx.reply('Отправлено, выбери кому хочешь написать, либо нажми выход', {
-    reply_markup: Markup.inlineKeyboard([
-      // [Markup.callbackButton('Выбрать сотрудника', 'choose_person')],
-      [Markup.callbackButton('Приватность', 'privacy')],
-      [Markup.callbackButton('Выход', 'exit')],
-    ]),
+    reply_markup: keyboard.start,
   });
 }
+
+const keyboard = {
+  start: Markup.inlineKeyboard([
+    // [Markup.callbackButton('Выбрать сотрудника', 'choose_person')],
+    [Markup.callbackButton('Приватность', 'privacy')],
+    [Markup.callbackButton('Выход', 'exit')],
+  ]),
+  fail: Markup.inlineKeyboard([
+    [Markup.callbackButton('Назад', 'anon_start')],
+    [Markup.callbackButton('Выход', 'exit')],
+  ]),
+};
 
 function messageSenderService(bot) {
   messageListener = new EventEmitter();

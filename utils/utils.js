@@ -24,7 +24,7 @@ async function checkUser(userObj) {
 async function registerUser(userObj) {
   let userData;
   try {
-    const data = await fs.readFile(DATA_PATH, 'utf-8');
+    const data = await fs.readFile(PERSONAL_DATA_PATH, 'utf-8');
     const json = JSON.parse(data);
     json.users.push(userObj);
     userData = JSON.stringify(json);
@@ -33,7 +33,7 @@ async function registerUser(userObj) {
     console.log('ошибка чтения');
   }
   try {
-    await fs.writeFile(DATA_PATH, userData);
+    await fs.writeFile(PERSONAL_DATA_PATH, userData);
   } catch (err) {
     // что делать при ошибке записи
     console.log('ошибка записи');
@@ -138,14 +138,8 @@ async function getUserList() {
 
 async function getUsersForAnonimMessage() {
   const userList = await getUserList();
-  const allowedUsers = userList
-    // .filter((user) => {
-    //   return user.isAdmin == false;
-    // })
-    .sort((a, b) => {
-      if (a.local_name.second_name < b.local_name.second_name) return -1;
-      else return 1;
-    });
+  const allowedUsers = userList;
+
   return allowedUsers;
 }
 
