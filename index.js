@@ -33,11 +33,9 @@ const stage = new Stage([
 bot.use(session());
 bot.use(stage.middleware());
 bot.use(async (ctx, next) => {
+  if (ctx.update.message.chat.id < 0) return;
   if (!ctx.session.local_name) {
     const isUser = await checkUserData(ctx);
-    // console.log('session', isUser);
-    // console.log('session', isUser);
-    // console.log(ctx.session);
     if (!isUser) return ctx.scene.enter('greeting');
   }
 
@@ -72,6 +70,7 @@ bot.action('notify', async (ctx) => {
 bot.hears('dailyReport', async (ctx, next) => {
   if (ctx.update.message.chat.id < 0) return;
   await ctx.reply(await createReportBotMessage(), { parse_mode: 'Markdown' });
+  next();
 });
 
 // ----------------anonimus
@@ -83,6 +82,7 @@ bot.hears('Anon', async (ctx, next) => {
   }
 
   ctx.scene.enter('anon');
+  next();
 });
 
 bot.action('dailyReport', async (ctx) => {
