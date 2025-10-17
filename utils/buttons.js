@@ -78,7 +78,7 @@ const setKassaLocation = {
       { text: 'Н5🙃', callback_data: 'loc_N5' },
     ],
     [
-      // { text: 'Фрейд🍡', callback_data: 'loc_FREUD' },
+      { text: 'СНЫ🌃', callback_data: 'loc_KASSADREAMS' },
       { text: 'Кафе🥐', callback_data: 'loc_CAFE' },
     ],
 

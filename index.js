@@ -33,7 +33,10 @@ const stage = new Stage([
 bot.use(session());
 bot.use(stage.middleware());
 bot.use(async (ctx, next) => {
-  if (ctx.update.message.chat.id < 0) return;
+  const userId =
+    (!!ctx.update.message ? ctx.update.message.from : undefined) ||
+    ctx.update.callback_query.from;
+  if (userId < 0) return;
   if (!ctx.session.local_name) {
     const isUser = await checkUserData(ctx);
     if (!isUser) return ctx.scene.enter('greeting');

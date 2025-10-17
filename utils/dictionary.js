@@ -24,6 +24,7 @@ const DICTIONARY = {
   MOVIE: 'Муви',
   BMF: 'БМФ',
   PHOTOHELP: 'Помощь',
+  KASSADREAMS: 'Сны',
 };
 
 const REPORT_LIST = [
@@ -42,6 +43,7 @@ const REPORT_LIST = [
       'MKN',
       'MKR',
       'R4',
+      'KASSADREAMS',
     ],
     prefix: '💰',
   },
