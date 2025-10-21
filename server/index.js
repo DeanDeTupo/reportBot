@@ -1,5 +1,5 @@
 require('dotenv').config();
-const fs = require('node:fs/promises');
+const fs = require('fs').promises;
 const { getGrafikPathName } = require('../utils/grafikEvent');
 
 const express = require('express');
