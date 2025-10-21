@@ -1,9 +1,17 @@
 const { Markup } = require('telegraf');
+require('dotenv');
+
+const DOMAIN = process.env.DOMAIN;
+const PORT = process.env.PORT;
+const GrafikURL = DOMAIN + ':' + PORT;
+const TestURL = process.env.WEBHOOK_DOMAIN;
 
 const mainMenu = {
   inline_keyboard: [
     [{ text: 'Написать отчёт', callback_data: 'report' }],
     [{ text: 'Напоминания', callback_data: 'notify' }],
+    // ??? заменить
+    [{ text: 'График', web_app: { url: TestURL } }],
   ],
 };
 const adminMainMenu = {
@@ -13,7 +21,7 @@ const adminMainMenu = {
       { text: 'Написать отчёт', callback_data: 'report' },
       { text: 'Напоминания', callback_data: 'notify' },
     ],
-    // [{ text: 'Напоминания', callback_data: 'notify' }],
+    [{ text: 'График', web_app: { url: TestURL } }],
   ],
 };
 const notify = (status) => {
@@ -78,7 +86,7 @@ const setKassaLocation = {
       { text: 'Н5🙃', callback_data: 'loc_N5' },
     ],
     [
-      // { text: 'Фрейд🍡', callback_data: 'loc_FREUD' },
+      { text: 'Сны😴', callback_data: 'loc_KASSADREAMS' },
       { text: 'Кафе🥐', callback_data: 'loc_CAFE' },
     ],
 

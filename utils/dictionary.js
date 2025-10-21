@@ -14,6 +14,7 @@ const DICTIONARY = {
   CAFE: 'Кафе',
   FREUD: 'Фрейд',
   DREAMS: 'Сновидения',
+  KASSADREAMS: 'Сновидения',
   VELICAN: 'Великан',
   POBEG: 'Побег',
   KOSMOS: 'Космос',
@@ -23,7 +24,7 @@ const DICTIONARY = {
   DVD: 'ДВД',
   MOVIE: 'Муви',
   BMF: 'БМФ',
-  PHOTO_HELP: 'Помощь',
+  PHOTOHELP: 'Помощь',
 };
 
 const REPORT_LIST = [
@@ -35,7 +36,7 @@ const REPORT_LIST = [
       'R3',
       'N3',
       'N5',
-      // 'ZUZU',
+      'KASSADREAMS',
       // 'FREUD',
       'CAFE',
       'MK',
@@ -58,7 +59,7 @@ const REPORT_LIST = [
       'DVD',
       'MOVIE',
       'BMF',
-      'PHOTO_HELP',
+      'PHOTOHELP',
     ],
     prefix: '📷',
   },

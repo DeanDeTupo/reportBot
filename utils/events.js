@@ -1,8 +1,10 @@
 const fs = require('fs').promises;
 
 const { REPORT_ORDER_LIST, DICT } = require('./dictionary');
+const { getGrafikPathName } = require('./grafikEvent');
 
 const DAILY_REPORT_PATH = './data/dailyReport.json';
+const PERSONAL_DATA_DB_PATH = './data/personalData.json';
 
 async function dailyClearReportList() {
   checkFileExist(DAILY_REPORT_PATH);
@@ -30,6 +32,48 @@ async function createReportBotMessage() {
   const result = date.concat(report.join('\n'));
   // console.log('отправляею вечерний отчет', result.length);
   return result;
+}
+
+async function getGrafikPassedList() {
+  //получить personalData
+  const allUsers = await readUserList(PERSONAL_DATA_DB_PATH);
+  const LAST_GRAFIK_PATH = getGrafikPathName();
+  const grafikData = await readJSON(LAST_GRAFIK_PATH);
+
+  const usersList = grafikData.users.map((user) => {
+    const userLocalNameObj = allUsers.find((_) => _.id == user.id).local_name;
+    const userName = parseUserName(userLocalNameObj);
+    return userName;
+  });
+
+  return `Заполнили график: \n${usersList.join(' \n')}`;
+}
+
+function parseUserName(localNameObj) {
+  const userFirstName =
+    localNameObj.first_name[0].toUpperCase() +
+    localNameObj.first_name.slice(1).toLowerCase();
+  const userSecondName =
+    localNameObj.second_name[0].toUpperCase() +
+    localNameObj.second_name.slice(1).toLowerCase();
+  return `${userSecondName} ${userFirstName}`;
+}
+
+async function readUserList(path) {
+  try {
+    const data = await fs.readFile(path, { encoding: 'utf-8' });
+    return JSON.parse(data).users;
+  } catch (err) {
+    return null;
+  }
+}
+
+async function readJSON(path) {
+  const readDataFromJSON = await fs.readFile(path, {
+    encoding: 'utf-8',
+  });
+
+  return JSON.parse(readDataFromJSON);
 }
 
 async function everyDayReport(bot) {
@@ -130,4 +174,5 @@ module.exports = {
   dailyClearReportList,
   updateReport,
   createReportBotMessage,
+  getGrafikPassedList,
 };

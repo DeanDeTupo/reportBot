@@ -1,16 +1,13 @@
 require('dotenv').config();
 const { EventEmitter } = require('events');
-const { Scenes } = require('telegraf');
+
 const { Markup, BaseScene, default: Telegraf } = require('telegraf');
-const { Extra } = require('telegraf');
 
 const { backMenu, start, toStart } = require('../commands');
 const {
-  getUserList,
   getUsersForAnonimMessage,
   getUserById,
   getNickname,
-  createNickname,
 } = require('../utils/utils');
 // console.log(typeof WizardScene);
 const anonimusScene = new BaseScene('anon');
