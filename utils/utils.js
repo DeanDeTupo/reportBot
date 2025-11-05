@@ -27,16 +27,16 @@ async function registerUser(userObj) {
     const data = await fs.readFile(PERSONAL_DATA_PATH, 'utf-8');
     const json = JSON.parse(data);
     json.users.push(userObj);
-    userData = JSON.stringify(json);
+    userData = JSON.stringify(json, null, 1);
   } catch (err) {
     // что делать при ошибке чтения
-    console.log('ошибка чтения');
+    console.log('ошибка чтения', err);
   }
   try {
     await fs.writeFile(PERSONAL_DATA_PATH, userData);
   } catch (err) {
     // что делать при ошибке записи
-    console.log('ошибка записи');
+    console.log('ошибка записи', err);
   }
 }
 

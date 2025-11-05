@@ -32,7 +32,11 @@ const setupBot = () => {
   bot.use(session());
   bot.use(stage.middleware());
   bot.use(async (ctx, next) => {
-    if (!ctx.session.local_name) {
+    // сообщение из группы игнорируем
+    if (ctx.update.message?.chat.id < 0) {
+      return;
+    }
+    if (!ctx.session?.local_name) {
       const isUser = await checkUserData(ctx);
       console.log('session', isUser);
       // console.log(ctx.session);

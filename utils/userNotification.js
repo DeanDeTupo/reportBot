@@ -29,7 +29,7 @@ function createEnvTime(env) {
 }
 
 async function startUsersNotification(bot) {
-  const purposeTS = createEnvTime('TIME');
+  const purposeTS = createEnvTime('NOTIFICATION_TIME');
 
   const nowTS = new Date().getTime();
   const timeout = purposeTS - nowTS;
