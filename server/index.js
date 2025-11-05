@@ -13,10 +13,10 @@ app.use(express.json());
 app.use(cors());
 
 // Предоставляем статику из папки public
-app.use(express.static(path.join(__dirname, '../public')));
+app.use('/grafik', express.static(path.join(__dirname, '../public')));
 
 // Задаем роут для главной страницы Telegram Mini App
-app.get('/', (req, res) => {
+app.get('/grafik', (req, res) => {
   // Отправляем на клиента файл index.html
   console.log('GET запрос');
 
