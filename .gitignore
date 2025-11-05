@@ -3,9 +3,11 @@
 ошибки.txt
 пример ctx.txt
 справка.txt
+/cert
 /other
 /data/*
 !/data/nicknameSource.json
 problems.txt
 photo.txt
 **.txt
+someStuff.js

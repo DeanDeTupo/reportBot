@@ -1,10 +1,7 @@
 const { Markup } = require('telegraf');
 require('dotenv');
 
-const DOMAIN = process.env.DOMAIN;
-const PORT = process.env.PORT;
-const GrafikURL = DOMAIN + ':' + PORT;
-const TestURL = process.env.WEBHOOK_DOMAIN;
+const GrafikURL = process.env.GRAFIK_DOMAIN;
 
 const mainMenu = {
   inline_keyboard: [

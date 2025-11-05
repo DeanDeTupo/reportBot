@@ -21,7 +21,7 @@ const textLengthWarning = (text) => {
 };
 
 function notifyStatusMessage(status) {
-  const NOTE_TIME = process.env.TIME.slice(0, 5);
+  const NOTE_TIME = process.env.NOTIFICATION_TIME.slice(0, 5);
   console.log(NOTE_TIME);
   return `Напоминания *${
     status ? 'ВКЛЮЧЕНЫ' : 'ВЫКЛЮЧЕНЫ'

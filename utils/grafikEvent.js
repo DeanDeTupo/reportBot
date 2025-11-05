@@ -53,7 +53,7 @@ function getGrafikPathName() {
 
   let startDate;
   if (currentDate.getDate() < 15) {
-    startDate = new Date(currentYear, currentMonth, 15);
+    startDate = new Date(currentYear, currentMonth, 16);
   } else {
     //выдаст ошибку в 2 половине декабря, ибо оставит текущий год
     currentMonth++;

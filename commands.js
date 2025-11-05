@@ -1,7 +1,11 @@
 // команды для бота
-
+require('dotenv');
 const { mainMenu, greeting, adminMainMenu } = require('./utils/buttons');
 const { checkUser, refreshData, isAdmin } = require('./utils/utils');
+const START_TEXT =
+  process.env.START_TEXT == ''
+    ? ''
+    : `\n\n` + process.env.START_TEXT.split('\\n').join('\n');
 
 const start = async (ctx) => {
   //убираем обработку команд для групповых чатов
@@ -20,11 +24,18 @@ const start = async (ctx) => {
   // }
   // await refreshData(checkData, ctx);
   if (!ctx.session.isAdmin) {
-    return ctx.reply(`🤖 Я принимаю отчёты`, { reply_markup: mainMenu });
+    return ctx.reply(`🤖 Я принимаю отчёты${START_TEXT}`, {
+      reply_markup: mainMenu,
+      parse_mode: 'Markdown',
+    });
   }
-  return ctx.reply(`🤖 Приветствую, ${ctx.session.local_name.first_name}`, {
-    reply_markup: adminMainMenu,
-  });
+  return ctx.reply(
+    `🤖 Приветствую, ${ctx.session.local_name.first_name}${START_TEXT}`,
+    {
+      reply_markup: adminMainMenu,
+      parse_mode: 'Markdown',
+    }
+  );
 };
 
 const backMenu = (ctx) => {

@@ -18,10 +18,7 @@ const { messageSenderService } = require('./scenes/anonimusScene');
 const { createGrafikList } = require('./utils/grafikEvent');
 
 //создаём экземплр бота
-const bot = new Telegraf(process.env.API_KEY_BOT);
-
-// опции
-const options = { dropPendingUpdates: true };
+const bot = new Telegraf(process.env.TOKEN);
 
 //подгружаем сценарии
 const stage = new Stage([
