@@ -1,6 +1,6 @@
 require('dotenv').config();
 const fs = require('fs').promises;
-const { getGrafikPathName } = require('../utils/grafikEvent');
+// const { getGrafikPathName } = require('../utils/grafikEvent');
 
 const express = require('express');
 
@@ -22,15 +22,6 @@ app.get('/grafik', (req, res) => {
 
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
-// app.get('/:id', async (req, res) => {
-//   // Отправляем на клиента файл index.html
-//   const reqId = req.params.id;
-//   console.log('Requested id: ', reqId);
-//   const dataById = await ticketRepo.getById(reqId);
-//   console.log('Data from DB: ', dataById);
-//   res.send(JSON.stringify(dataById));
-//   res.end();
-// });
 
 app.get('/grafik/:id', async (req, res) => {
   // Отправляем на клиента файл index.html
@@ -45,7 +36,6 @@ app.get('/grafik/:id', async (req, res) => {
   }
   const userGrafikData = await getUserGrafikData(reqId, employer);
   console.log('В ГРАФИК зашёл :', parseName(employer));
-  // res.setHeaders(new Map([['Access-Control-Allow-Origin', '*']]));
   res.send(JSON.stringify(userGrafikData));
   res.end();
 });
@@ -58,7 +48,6 @@ app.post('/grafik/:id', express.json(), async (req, res) => {
   // Отправляем на клиента файл index.html
   const reqId = req.params.id;
   console.log('Received grafik from id: ', reqId);
-  // console.log(req.body);
   // проверка на существование сотрудника
   const isEmployer = await checkIsEmployerId(reqId);
   if (!isEmployer) {
@@ -69,102 +58,23 @@ app.post('/grafik/:id', express.json(), async (req, res) => {
 
   const writeDataToBD = await saveUserGrafik(reqId, req.body);
   if (writeDataToBD) {
-    // console.log(За)
     res.sendStatus(200);
     res.end();
   }
 });
 
-// app.put('/:id', express.json(), async (req, res) => {
-//   // console.log(req);
-//   // запрос к БД на изменение данных
-//   const editTicketStatus = await ticketRepo.update(
-//     req.params.id,
-//     req.body.status
-//   );
-//   console.log(editTicketStatus);
-//   res.send('OK');
-
-//   // validate(req.body.data);
-// });
-
-// Команда start открывает Web App
-
-// bot.command('start', async (ctx) => {
-//   try {
-//     // Пытаемся отправить сообщение с кнопкой открытия мини-приложения в Телеграм
-
-//     await ctx.reply('Welcome to our service:', {
-//       reply_markup: {
-//         inline_keyboard: [
-//           [
-//             {
-//               text: 'Показать QR-код билета',
-//               callback_data: 'send_qr',
-//             },
-//             {
-//               text: 'Сканировать билет',
-//               web_app: { url: process.env.WEBHOOK_DOMAIN },
-//             },
-//           ],
-//         ],
-//       },
-//     });
-
-//     // Обрабатываем ошибку и отправляем уведомление пользователю
-//   } catch (error) {
-//     console.error('Error opening web app:', error);
-
-//     ctx.reply('Sorry, something went wrong.');
-//   }
-// });
-
-// Добавляем альтернативную команду — /webapp (аналог /start)
-
-// bot.command('webapp', async (ctx) => {
-//   try {
-//     await ctx.reply('Open our web app:', {
-//       reply_markup: {
-//         inline_keyboard: [
-//           [
-//             {
-//               text: 'Open Web App',
-//               web_app: { url: process.env.WEBHOOK_DOMAIN },
-//             },
-//           ],
-//         ],
-//       },
-//     });
-//   } catch (error) {
-//     console.error('Error sending web app button:', error);
-
-//     ctx.reply('Sorry, something went wrong.');
-//   }
-// });
-
-// app.listen(PORT, () => {
-//   console.log(`Server is running on port ${PORT}`);
-
-//   console.log(
-//     `Web app available at: ${
-//       process.env.WEBHOOK_DOMAIN || `http://127.0.0.1:${PORT}`
-//     }`
-//   );
-// });
-
-// -----------------------------------------------------------------
-
-const GRAFIK_DB_PATH = path.resolve(__dirname, '.././', getGrafikPathName());
+// const getGrafikAbsPath = () => {
+//   return path.resolve(__dirname, '.././', getGrafikPathName());
+// };
 const PERSONAL_DATA_DB_PATH = path.resolve(
   __dirname,
   '.././',
   'data/personalData.json'
 );
 
-// console.log(path.resolve(__dirname, '.././', 'data/personalData.json'));
 async function getUserGrafikData(reqId, employerName) {
   try {
-    const DBdata = await readJSON(GRAFIK_DB_PATH);
+    const DBdata = await readJSON(global.GRAFIK_PATH);
 
     const calendarSchema = DBdata.calendar;
     let userData = DBdata.users.find((item) => {
@@ -184,7 +94,6 @@ async function getUserGrafikData(reqId, employerName) {
       calendar: calendarSchema,
       userGrafikData: Object.assign(userData, { local_name: employerName }),
     };
-    // console.log(userGrafikData);
     return userGrafikData;
   } catch (err) {
     console.log('ERROR GetGrafikData');
@@ -195,7 +104,7 @@ async function getUserGrafikData(reqId, employerName) {
 
 async function saveUserGrafik(id, dataObj) {
   try {
-    const BDData = await readJSON(GRAFIK_DB_PATH);
+    const BDData = await readJSON(global.GRAFIK_PATH);
     const users = BDData.users;
     const idx = users.findIndex((user) => user.id == id);
     if (idx === -1) {
@@ -204,7 +113,7 @@ async function saveUserGrafik(id, dataObj) {
       Object.assign(users[idx], dataObj);
     }
 
-    fs.writeFile(GRAFIK_DB_PATH, JSON.stringify(BDData));
+    fs.writeFile(global.GRAFIK_PATH, JSON.stringify(BDData, null, 0));
 
     return true;
   } catch (err) {
@@ -213,11 +122,6 @@ async function saveUserGrafik(id, dataObj) {
   }
 }
 
-// async function checkEmployerId(id) {
-//   const usersObj = await readJSON(PERSONAL_DATA_DB_PATH);
-//   const idx = usersObj.users.findIndex((user) => user.id == id);
-//   return idx < 0 ? false : true;
-// }
 async function checkIsEmployerId(id) {
   const usersObj = await readJSON(PERSONAL_DATA_DB_PATH);
   const usr = usersObj.users.find((user) => user.id == id);

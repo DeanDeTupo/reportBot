@@ -1,16 +1,14 @@
 const fs = require('fs').promises;
 
-const GRAFIK_PATH = './data/grafik.json';
-
 // запускать и очищать график раз в 2 недели
-/**
+/**uz
  * берем сейчас и создаём график, создаём файл с данными, затем вычисляем следующий график, и на setTimeout запускаем то же самое
  */
 
 async function createGrafikList() {
   // //это функция делает создание графика каждые 2 недели
-  const currentGrafikPathName = getGrafikPathName();
-  await checkGrafikList(currentGrafikPathName);
+  global.GRAFIK_PATH = getGrafikPathName();
+  await checkGrafikList(global.GRAFIK_PATH);
 
   // высчитываем через сколько надо будет создать новый график
   const delay = grafikDelay();
@@ -29,6 +27,7 @@ async function createGrafikList() {
 }
 // createGrafikList();
 
+// возвращает задержку в миллисекундах между текущей датой и первым днём двухнедельного графика(либо 1 либо 16 числом месяца)
 function grafikDelay() {
   // находим первый день следующего графика
   let currentDate = new Date();
@@ -36,8 +35,8 @@ function grafikDelay() {
   let currentYear = currentDate.getFullYear();
 
   let startDate;
-  if (currentDate.getDate() < 15) {
-    startDate = new Date(currentYear, currentMonth, 15);
+  if (currentDate.getDate() < 16) {
+    startDate = new Date(currentYear, currentMonth, 16);
   } else {
     currentMonth++;
     startDate = new Date(currentYear, currentMonth, 1);
@@ -52,7 +51,7 @@ function getGrafikPathName() {
   let currentYear = currentDate.getFullYear();
 
   let startDate;
-  if (currentDate.getDate() < 15) {
+  if (currentDate.getDate() < 16) {
     startDate = new Date(currentYear, currentMonth, 16);
   } else {
     //выдаст ошибку в 2 половине декабря, ибо оставит текущий год
@@ -61,7 +60,7 @@ function getGrafikPathName() {
   }
 
   // проверяем какое текущее имя должно быть у графика сейчас
-  let halfMonth = currentDate.getDate() < 15 ? '.2pol.' : '.1pol.';
+  let halfMonth = currentDate.getDate() < 16 ? '.2pol.' : '.1pol.';
   return (
     './data/grafik' +
     halfMonth +
@@ -79,11 +78,11 @@ function createCalendar() {
   let startDate;
   let endDate;
   // задаём дни для графика
-  if (currentDate.getDate() < 15) {
+  if (currentDate.getDate() < 16) {
     startDate = new Date(
       currentYear,
       currentMonth,
-      15,
+      16,
       -(currentDate.getTimezoneOffset() / 60),
       0,
       0,
@@ -188,7 +187,7 @@ async function initGrafikList(path) {
       users: new Array(),
     };
 
-    await fs.writeFile(path, JSON.stringify(grafikObj));
+    await fs.writeFile(path, JSON.stringify(grafikObj, null, 1));
     return true;
   } catch {
     console.log('не удалось создать график');
