@@ -1,4 +1,3 @@
-const { Markup } = require('telegraf');
 require('dotenv');
 
 const GrafikURL = process.env.GRAFIK_DOMAIN;
@@ -9,6 +8,7 @@ const mainMenu = {
     [{ text: 'Напоминания', callback_data: 'notify' }],
     // ??? заменить
     [{ text: 'График', web_app: { url: GrafikURL } }],
+    // [{ text: 'Личный Дед Мороз', callback_data: 'dedMoroz' }],
   ],
 };
 const adminMainMenu = {
@@ -19,6 +19,7 @@ const adminMainMenu = {
       { text: 'Напоминания', callback_data: 'notify' },
     ],
     [{ text: 'График', web_app: { url: GrafikURL } }],
+    [{ text: 'Личный Дед Мороз', callback_data: 'dedMoroz' }],
   ],
 };
 const notify = (status) => {

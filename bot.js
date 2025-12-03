@@ -16,6 +16,7 @@ const { startUsersNotification } = require('./utils/userNotification');
 const { updateDailyReport } = require('./utils/buttons');
 const { messageSenderService } = require('./scenes/anonimusScene');
 const { createGrafikList } = require('./utils/grafikEvent');
+const { dedMorozScene } = require('./scenes/dedMorozScene');
 
 //создаём экземплр бота
 const bot = new Telegraf(process.env.TOKEN);
@@ -26,6 +27,7 @@ const stage = new Stage([
   greetingScene,
   notifyScene,
   anonimusScene,
+  dedMorozScene,
 ]);
 
 const setupBot = () => {
@@ -61,6 +63,10 @@ const setupBot = () => {
   bot.action('greeting', (ctx) => {
     ctx.scene.enter('greeting');
   });
+  bot.action('dedMoroz', (ctx) => {
+    ctx.scene.enter('dedMoroz');
+  });
+
   bot.action('notify', async (ctx) => {
     // убрать
 
