@@ -8,7 +8,7 @@ const mainMenu = {
     [{ text: 'Напоминания', callback_data: 'notify' }],
     // ??? заменить
     [{ text: 'График', web_app: { url: GrafikURL } }],
-    // [{ text: 'Личный Дед Мороз', callback_data: 'dedMoroz' }],
+    [{ text: 'Личный Дед Мороз', callback_data: 'dedMoroz' }],
   ],
 };
 const adminMainMenu = {
