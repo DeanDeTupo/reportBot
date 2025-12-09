@@ -47,7 +47,7 @@ anonimusScene.action('choose_person', async (ctx, next) => {
 
 anonimusScene.on('text', async (ctx) => {
   const userInput = ctx.update.message.text;
-  console.log(`введено ${userInput}`);
+  // console.log(`введено ${userInput}`);
   if (ctx.session.step === 0) {
     await searchPersonHandler(ctx, userInput);
   } else if (ctx.session.step === 1) {
@@ -128,7 +128,7 @@ async function searchPersonHandler(ctx, userInput) {
       );
     });
   }
-  foundUsers.forEach((user) => console.log(user.local_name));
+  // foundUsers.forEach((user) => console.log(user.local_name));
   if (!foundUsers.length) {
     ctx.reply('ничего не найдено, введи еще раз', {
       reply_markup: keyboard.fail,
@@ -146,7 +146,7 @@ async function searchPersonHandler(ctx, userInput) {
 
 async function messageToUserHandler(ctx, userInput) {
   // console.log(`Сообщение: ${ctx.update.message.text}`);
-  console.log(`Сообщение: ${userInput}`);
+  // console.log(`Сообщение: ${userInput}`);
   ctx.session.step = 0;
   // ctx.session.messageStatus = null;
   //

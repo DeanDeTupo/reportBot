@@ -7,17 +7,22 @@ const fs = require('fs').promises;
 
 async function createGrafikList() {
   // //это функция делает создание графика каждые 2 недели
-  global.GRAFIK_PATH = getGrafikPathName();
+  // global.GRAFIK_PATH = getGrafikPathName();
+  global.GRAFIK_PATH = './data/grafik.1pol.1.2026.json';
+
   await checkGrafikList(global.GRAFIK_PATH);
 
   // высчитываем через сколько надо будет создать новый график
-  const delay = grafikDelay();
+
+  // УБРАТЬ
+  // const delay = grafikDelay();
+  const delay = 1000 * 3600 * 24 * 11;
   // console.log(delay);
 
   setTimeout(createGrafikList, delay);
   console.log(
     'новый график создастся через',
-    Math.floor(delay / 3600000 / 24),
+    Math.floor(delay / 3600000 / 24), //1000*3600*24*11
     'дней',
     Math.floor(
       (delay - Math.floor(delay / 3600000 / 24) * 24 * 3600000) / 3600000

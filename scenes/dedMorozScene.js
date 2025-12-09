@@ -46,7 +46,7 @@ const DED_MOROZ_BUTTONS = {
 dedMorozScene.enter(enterDedMoroz);
 
 async function enterDedMoroz(ctx) {
-  console.log(ctx.session);
+  // console.log(ctx.session);
   // ищем данные по человеку
   const participantData = await getParticipantData(ctx.session);
   // если не нашли, предлагаем участие
@@ -68,7 +68,7 @@ async function enterDedMoroz(ctx) {
 
 const enter = async (ctx) => {
   const wishes = ctx.session.DED_MOROZ.wishes;
-  console.log(wishes);
+  // console.log(wishes);
   const subMsg = !!wishes
     ? `Ваши пожелания: ${wishes}`
     : 'Вы ещё не добавили пожелания';
@@ -79,7 +79,7 @@ const enter = async (ctx) => {
 
 dedMorozScene.action('enter', async (ctx) => {
   const wishes = ctx.session.DED_MOROZ.wishes;
-  console.log(wishes);
+  // console.log(wishes);
   const subMsg = !!wishes
     ? `Ваши пожелания: ${wishes}`
     : 'Вы ещё не добавили пожелания';
@@ -135,6 +135,28 @@ dedMorozScene.on('text', async (ctx) => {
       reply_markup: DED_MOROZ_BUTTONS.welcome,
     });
   }
+  // --------------------------------------------------
+  if (input == '/finalCheck') {
+    const usersList = await readJson(PARTICIPANTS_LIST_PATH);
+    for (let user of usersList) {
+      const sendMessage = new Promise((resolve) => {
+        messageListener.emit('anonimMessage', {
+          // status: ctx.session.messageStatus,
+          to: { id: user.id, local_name: user.local_name },
+          // message: ctx.update.message.text,
+          message:
+            'Проверь свои пожелания в Разделе Личный Дед Мороз, всё ли правильно',
+          from: 'admin',
+          resolve: resolve,
+        });
+      });
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      console.log('отправлено');
+    }
+
+    return;
+  }
+  // ----------------------------------------------------
   try {
     await writeParticipantWishes(ctx.session, input);
     await ctx.reply('Записал твои желания');
@@ -148,6 +170,7 @@ dedMorozScene.on('text', async (ctx) => {
 
 dedMorozScene.action('exit', async (ctx, next) => {
   ctx.scene.leave();
+  delete ctx.session.DED_MOROZ;
   return backMenu(ctx);
 });
 
