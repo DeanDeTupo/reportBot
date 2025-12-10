@@ -109,11 +109,6 @@ dedMorozScene.on('text', async (ctx) => {
     ctx.scene.leave();
     return start(ctx);
   }
-  if (!ctx.session.DED_MOROZ) {
-    return await ctx.reply('Ты не участвуешь!', {
-      reply_markup: DED_MOROZ_BUTTONS.welcome,
-    });
-  }
   if (input == '/finalCheck') {
     const usersList = await readJson(PARTICIPANTS_LIST_PATH);
     for (let user of usersList) {
@@ -133,6 +128,11 @@ dedMorozScene.on('text', async (ctx) => {
     }
 
     return;
+  }
+  if (!ctx.session.DED_MOROZ) {
+    return await ctx.reply('Ты не участвуешь!', {
+      reply_markup: DED_MOROZ_BUTTONS.welcome,
+    });
   }
   // try {
   //   await writeParticipantWishes(ctx.session, input);
