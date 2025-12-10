@@ -6,18 +6,16 @@ require('dotenv').config();
 const { backMenu, start, toStart } = require('../commands');
 const dedMorozScene = new BaseScene('dedMoroz');
 
-// const PARTICIPANTS_LIST_PATH = '../data/dedMoroz.json';
 const PARTICIPANTS_LIST_PATH = path.resolve(__dirname, '../data/dedMoroz.json');
-const isClosedForJoin = process.env.DED_MOROZ_IS_CLOSED;
 
 const DED_MOROZ_MESSAGES = {
   welcome:
-    'Становись тайным дед морозом. Присоединиться можно до:' +
-    process.env.DED_MOROZ_VOTE_STOP,
-  enter: `Жеребьёвка будет ${process.env.DED_MOROZ_VOTE_STOP}\n\nЕще можно отменить участие или изменить желания.`,
-  join: `Отлично, записал тебя.\n${process.env.DED_MOROZ_VOTE_STOP} когда подберу для тебя человека\n\n✍🏻Напиши свои пожалания к подарку для Деда Мороза`,
+    'Вы не участвовали(\nПрисоединиться больше нельзя, Деды Морозы уже распределены',
+  enter: `Жеребьёвка завершена. Нажимай на "Моя цель"`,
+  join: `Отлично, записал тебя.\n когда подберу для тебя человека\n\n✍🏻Напиши свои пожалания к подарку для Деда Мороза`,
   unjoin: `Ты больше не участвуешь😡\n Ещё есть время присоединиться`,
-  wishes: 'Напиши предпочтения для подарка, Это увидит твой тайный Дед Мороз',
+  wishes: 'Вот что видит твой Дедушка Мороз:\n\n',
+  target: '',
   ERRORS: {
     register: 'Не удалось добавить, попробуй ещё раз',
     editWishes: 'Не удалось изменить пожелания, попробуй ещё раз',
@@ -26,17 +24,17 @@ const DED_MOROZ_MESSAGES = {
 
 const DED_MOROZ_BUTTONS = {
   welcome: {
-    inline_keyboard: [
-      [{ text: 'Участвую!🎅🏼', callback_data: 'join' }],
-      [{ text: 'Выход🔙', callback_data: 'exit' }],
-    ],
+    inline_keyboard: [[{ text: 'Выход🔙', callback_data: 'exit' }]],
   },
   enter: {
     inline_keyboard: [
-      [{ text: 'Напиши свои желания✍🏻', callback_data: 'wishes' }],
-      [{ text: 'Не участвую🤬', callback_data: 'unjoin' }],
+      [{ text: 'Моя цель 🎯', callback_data: 'target' }],
+      [{ text: 'Мои желания', callback_data: 'wishes' }],
       [{ text: 'Выход🔙', callback_data: 'exit' }],
     ],
+  },
+  target: {
+    inline_keyboard: [[{ text: 'Назад🔙', callback_data: 'enter' }]],
   },
   wishes: {
     inline_keyboard: [[{ text: 'Назад🔙', callback_data: 'enter' }]],
@@ -57,69 +55,50 @@ async function enterDedMoroz(ctx) {
     });
   }
   // для участников
-  const wishes = ctx.session.DED_MOROZ.wishes;
-  const subMsg = !!wishes
-    ? `Ваши пожелания: ${wishes}`
-    : 'Вы ещё не добавили пожелания';
-  return await ctx.editMessageText(DED_MOROZ_MESSAGES.enter + subMsg, {
+
+  return await ctx.editMessageText(DED_MOROZ_MESSAGES.enter, {
     reply_markup: DED_MOROZ_BUTTONS.enter,
   });
 }
 
-const enter = async (ctx) => {
-  const wishes = ctx.session.DED_MOROZ.wishes;
-  // console.log(wishes);
-  const subMsg = !!wishes
-    ? `Ваши пожелания: ${wishes}`
-    : 'Вы ещё не добавили пожелания';
-  return await ctx.reply(DED_MOROZ_MESSAGES.enter + subMsg, {
-    reply_markup: DED_MOROZ_BUTTONS.enter,
-  });
-};
+// const enter = async (ctx) => {
+//   const wishes = ctx.session.DED_MOROZ.wishes;
+//   // console.log(wishes);
+//   const subMsg = !!wishes
+//     ? `Ваши пожелания: ${wishes}`
+//     : 'Вы ещё не добавили пожелания';
+//   return await ctx.reply(DED_MOROZ_MESSAGES.enter + subMsg, {
+//     reply_markup: DED_MOROZ_BUTTONS.enter,
+//   });
+// };
 
 dedMorozScene.action('enter', async (ctx) => {
-  const wishes = ctx.session.DED_MOROZ.wishes;
-  // console.log(wishes);
-  const subMsg = !!wishes
-    ? `Ваши пожелания: ${wishes}`
-    : 'Вы ещё не добавили пожелания';
-  return await ctx.editMessageText(DED_MOROZ_MESSAGES.enter + subMsg, {
+  return await ctx.editMessageText(DED_MOROZ_MESSAGES.enter, {
     reply_markup: DED_MOROZ_BUTTONS.enter,
   });
 });
 
-// присоединиться
-dedMorozScene.action('join', async (ctx) => {
-  try {
-    await registerParticipant(ctx.session);
-    return await ctx.editMessageText(DED_MOROZ_MESSAGES.join, {
-      reply_markup: DED_MOROZ_BUTTONS.enter,
-    });
-  } catch (err) {
-    return await ctx.editMessageText(DED_MOROZ_MESSAGES.ERRORS.register, {
-      reply_markup: DED_MOROZ_BUTTONS.welcome,
-    });
-  }
-});
-
-// НЕ участвую
-dedMorozScene.action('unjoin', async (ctx) => {
-  try {
-    await deleteParticipant(ctx.session);
-    return await ctx.editMessageText(DED_MOROZ_MESSAGES.unjoin, {
-      reply_markup: DED_MOROZ_BUTTONS.welcome,
-    });
-  } catch (err) {
-    return await ctx.editMessageText(DED_MOROZ_MESSAGES.ERRORS.unjoin, {
-      reply_markup: DED_MOROZ_BUTTONS.enter,
-    });
-  }
-});
-
-dedMorozScene.action('wishes', async (ctx) => {
-  await ctx.editMessageText(DED_MOROZ_MESSAGES.wishes, {
-    reply_markup: DED_MOROZ_BUTTONS.wishes,
+dedMorozScene.action('target', async (ctx) => {
+  const target = ctx.session.DED_MOROZ.target;
+  const targetName =
+    target.local_name.first_name + ' ' + target.local_name.second_name;
+  const targetWishes =
+    target.wishes == '' ? 'Пожеланий нет. Импровизируй😅' : target.wishes;
+  const substring = `Твоя цель:\n👉🏻${targetName}👈🏼\n\nЧего хочет:\n\n${targetWishes}\n---------\nПорадуй перед НГ человека! Сливаться уже нельзя!`;
+  await ctx.editMessageText(substring, {
+    reply_markup: DED_MOROZ_BUTTONS.target,
   });
+});
+dedMorozScene.action('wishes', async (ctx) => {
+  const userWishes = ctx.session.DED_MOROZ.wishes;
+  const substring = userWishes == '' ? '~(ты ничего не выбрал)~\n' : userWishes;
+  await ctx.editMessageText(
+    DED_MOROZ_MESSAGES.wishes + substring + '\n!Уже ничего не изменить...',
+    {
+      parse_mode: 'Markdown',
+      reply_markup: DED_MOROZ_BUTTONS.wishes,
+    }
+  );
 });
 
 // handle TEXT
@@ -135,7 +114,6 @@ dedMorozScene.on('text', async (ctx) => {
       reply_markup: DED_MOROZ_BUTTONS.welcome,
     });
   }
-  // --------------------------------------------------
   if (input == '/finalCheck') {
     const usersList = await readJson(PARTICIPANTS_LIST_PATH);
     for (let user of usersList) {
@@ -145,7 +123,7 @@ dedMorozScene.on('text', async (ctx) => {
           to: { id: user.id, local_name: user.local_name },
           // message: ctx.update.message.text,
           message:
-            'Проверь свои пожелания в Разделе Личный Дед Мороз, всё ли правильно',
+            'Жеребьёвка завершена!\n\nЗаходи в "Личный Дед Мороз" и жми "Моя цель", чтоб узнать кому тебе дарить подарок!\n\n Сливаться уже нельзя!',
           from: 'admin',
           resolve: resolve,
         });
@@ -156,16 +134,15 @@ dedMorozScene.on('text', async (ctx) => {
 
     return;
   }
-  // ----------------------------------------------------
-  try {
-    await writeParticipantWishes(ctx.session, input);
-    await ctx.reply('Записал твои желания');
-    return enter(ctx);
-  } catch (err) {
-    console.log('Ошибка записи желания, попробуй позже');
-    await ctx.reply('Произошла ошибка...Плак');
-    return enter(ctx);
-  }
+  // try {
+  //   await writeParticipantWishes(ctx.session, input);
+  //   await ctx.reply('Записал твои желания');
+  //   return enter(ctx);
+  // } catch (err) {
+  //   console.log('Ошибка записи желания, попробуй позже');
+  //   await ctx.reply('Произошла ошибка...Плак');
+  //   return enter(ctx);
+  // }
 });
 
 dedMorozScene.action('exit', async (ctx, next) => {
