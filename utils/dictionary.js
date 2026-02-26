@@ -19,6 +19,7 @@ const DICTIONARY = {
   POBEG: 'Побег',
   KOSMOS: 'Космос',
   ILLUSIONS: 'Иллюзии',
+  VSELCHUDES: 'Вселенная Ч',
   STRAH: 'Страх',
   STEKLO: 'Стекло',
   DVD: 'ДВД',
@@ -52,7 +53,8 @@ const REPORT_LIST = [
     location_order: [
       'VELICAN',
       'POBEG',
-      'ILLUSIONS',
+      // 'ILLUSIONS',
+      'VSELCHUDES',
       'STRAH',
       'STEKLO',
       'DREAMS',

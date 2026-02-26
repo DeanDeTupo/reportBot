@@ -112,7 +112,7 @@ const setPhotoLocation = {
     ],
     [
       { text: 'Великан☎️', callback_data: 'loc_VELICAN' },
-      { text: 'Иллюзии🖼', callback_data: 'loc_ILLUSIONS' },
+      { text: 'ВселеннаяЧ🖼', callback_data: 'loc_VSELCHUDES' },
     ],
     [{ text: 'ПОМОЩЬ🛟', callback_data: 'loc_PHOTOHELP' }],
     [{ text: 'назад🔙', callback_data: 'to_profession' }],
